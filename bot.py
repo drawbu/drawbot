@@ -2,463 +2,863 @@ import discord
 import json
 import random
 import os
+import logging
+import subprocess
+import platform
 from art import *
 from datetime import datetime
+import operator
+
+#TODO: 
+# - changer la détéction des mots
+# - ajouter les nouvelles fonctionnalitées :
+#    - l'image a l'arrivée d'un joueur
+#    - steam
+#    - newegg
+#    - amazon?
+# - mettre les commandes dans des fichiers séparés
 
 
-with open('config.json') as jsonFile:
-    jsonData = json.load(jsonFile)
-    jsonFile.close()
-    token = jsonData['token']
+intents = discord.Intents.default()
+intents.members = True
+client = discord.Client(intents = intents)
+
+mainFiles = './'
+
+#Configuation des fichiers morpion.json et config.json par défault
+morpionJson = {'player': '', 'tours': 0, 'joueur': 'O', 'entree': 0, 'victoire': False, 'plateau': ' 123456789', 'bot': '', 'dernier': ''}
+configJson = {'token': '0', 'prefix': ';'}
+
+# Fonctions principales (fonctions très utiles)
+def openFile(repertory,file,action,fileData) :
+    """Permet de créer ou ouvrir des fichier json. Dans action il faut mettre 'r' pour lire et 'w' pour remplacer le contenu du fichier par fileData. Si le fichier n'existe pas, il faut faire 'w'."""
+    with open(repertory + file + '.json',action) as jsonFile:
+        if action == 'r' :
+            fileData = json.load(jsonFile)
+        elif action == 'w' :
+            json.dump(fileData, jsonFile)
+        jsonFile.close()
+        return fileData
+
+def verifyFile(repertory,file,fileJson) :
+    """Nécessite openFile(). Permet de créer un fichier si il n'existe pas et sinon de vérifier si le contenu du fichier correspond bien à au modèle (fileJson)."""
+    if (file + '.json') not in os.listdir(repertory) :
+        openFile(repertory, file, 'w', fileJson)
+    fileData = openFile(repertory, file, 'r', 0)
+    for cle,valeur in fileJson.items():
+        if cle not in fileData.keys() :
+            fileData[cle] = fileJson[cle]
+    openFile(repertory, file, 'w', fileData)
+    return fileData
+
+def createDir(repertory):
+    """Créé un dossier, et si n'existe pas ne fait rien"""
+    try:
+        os.mkdir(repertory)
+    except:
+        pass
+
+# Fonctions secondaires (pour des utilisations précises)
+def affichageMorpion(plateau) :
+    curseur = 1
+    affichage = ''
+    while curseur != 10 :
+        if plateau[curseur] == 'O' :
+            affichage += ':o:'
+        elif plateau[curseur] == 'X' :
+            affichage += ':x:'
+        elif plateau[curseur] == '1' :
+            affichage += ':one:'
+        elif plateau[curseur] == '2' :
+            affichage += ':two:'
+        elif plateau[curseur] == '3' :
+            affichage += ':three:'
+        elif plateau[curseur] == '4' :
+            affichage += ':four:'
+        elif plateau[curseur] == '5' :
+            affichage += ':five:'
+        elif plateau[curseur] == '6' :
+            affichage += ':six:'
+        elif plateau[curseur] == '7' :
+            affichage += ':seven:'
+        elif plateau[curseur] == '8' :
+            affichage += ':eight:'
+        elif plateau[curseur] == '9' :
+            affichage += ':nine:'
+        if curseur == 3 or curseur == 6:
+            affichage += '\n'
+        curseur += 1
+    return affichage
+
+def ping(host):
+    
+    #Returns True if host responds to a ping request
+    #author : https://stackoverflow.com/a/35625078
+    # ping.py  2016-02-25 Rudolf
+    # Ping parameters as function of OS
+    ping_str = "-n 1" if  platform.system().lower()=="windows" else "-c 1"
+    args = "ping " + " " + ping_str + " " + host
+    need_sh = False if  platform.system().lower()=="windows" else True
+
+    # Ping
+    return subprocess.call(args, shell=need_sh) == 0
+
+def mois(mois):
+    mois = 0
+    if mois == 2 :
+        mois = 31
+    elif mois == 3 :
+        mois = 59
+    elif mois == 4 :
+        mois = 90
+    elif mois == 5 :
+        mois = 120
+    elif mois == 6 :
+        mois = 151
+    elif mois == 7 :
+        mois = 181
+    elif mois == 8 :
+        mois = 212
+    elif mois == 9 :
+        mois = 243
+    elif mois == 10 :
+        mois = 273
+    elif mois == 11 :
+        mois = 304
+    elif mois == 12 :
+        mois = 334
+    return mois
+
+openFile(mainFiles,'morpion','w',morpionJson)
+openFile(mainFiles,'commandes','w',{})
+
+#Création/vérifcation du fichier config
+config = verifyFile(mainFiles, 'config', configJson)
+token = config['token']
 
 
-class MyClient(discord.Client):
+@client.event
+async def on_ready():
+    print('Connecté en temps que {0.user.name} !'.format(client))
 
 
-    async def on_ready(self):
+@client.event
+async def on_member_join(member):
+    serverFiles = './servers/' + str(member.guild.id) + '/'
+    server = openFile(serverFiles,'server','r',0)
+    channelWelcome = client.get_channel(server['welcome']) 
+    print('[{0.guild}] Le membre {0.name} viens de rejoindre le serveur'.format(member))   
+    for channel in member.guild.channels :
+        if server['welcome'] == channel.id :
+            embed = discord.Embed(title='Un nouveau membre viens de nous rejoindre !', description='Bienvenue <@!' + str(member.id) + '> !', color=0x009dff)
+            await channelWelcome.send(embed=embed)
+
+
+@client.event
+async def on_message(message):
+
+    def commande(commande):
+        if message.content.startswith(commande):
+            return True
+        else :
+            return False
+
+    date = str(datetime.now())[0:19]
+
+    # l'emplacement des différents dossiers
+    mainFiles = './'
+    if message.channel.type is not discord.ChannelType.private:
+        serversBaseFiles = mainFiles + 'servers/'
+        serverFiles = serversBaseFiles + '{0.guild.id}/'.format(message)
+        usersFiles = serverFiles + 'users/'
+    
+    # variables utiles
+    drawbuMP = client.get_user(352125871617736704)
+
+    # configuation des fichiers morpion.json et config.json par défault
+    config_idle = {'startIdleMaxTime': 3,}
+    userJson = {'games':0, 'wins': 0, 'money':100, 'daily':0, 'derniereconnexion':str(datetime.now()), 'patates':0, 'mais':0, 'carrotes':0, 'poulailler':0, 'idleMaxTime': 3}
+    serverJson = {'welcome':None}
+    idleJson = {'afklesstime':3,'afkmaxtime':72,'patates':{'prix':5,'revenus':1,'unlock':0,'max':50},'mais':{'prix':15,'revenus':2,'unlock':200,'max':50},'carrotes':{'prix':40,'revenus':4,'unlock':600,'max':50},'poulailler':{'prix':100,'revenus':8,'unlock':1500,'max':50}}
+
+
+
+    #Logs
+    messageLogs = message.content.replace('\n', ' ')
+    if message.channel.type is discord.ChannelType.private:
+        print(f'[{message.channel}] : {messageLogs}')
+    else :
+        print(f'[{message.guild}] [#{message.channel}] {message.author.name} : {messageLogs}')
+
+
+    # récupération du fichier config
+    config = openFile(mainFiles,'config','r',0)
+
+    if message.channel.type is not discord.ChannelType.private:
+        # création du dossier pour les serveurs
+        createDir(serversBaseFiles)
+
+        # création/vérification du dossier et du fichier serveur
+        createDir(serverFiles)
+        server = verifyFile(serverFiles, 'server', serverJson)
+
+        # création/vérification du dossier et du fichier utilisateur
+        createDir(usersFiles)
+        userData = verifyFile(usersFiles,str(message.author.id),userJson)
+
+
+    if message.content.startswith(config['prefix'] + 'pierrefeuilleciseaux') or message.content.startswith(config['prefix'] + 'chifoumi'): #partie de pierre feuille ciseaux contre le bot
+
+        emojiRock = '🪨'
+        emojiScissors = '✂️'
+        emojiPaper = '🧻'
+        choix = random.choice([emojiRock, emojiScissors, emojiPaper])
+
+        texte = message.content
+
+        if texte.startswith(config['prefix'] + 'pierrefeuilleciseaux') :
+            texte = message.content[len(config['prefix']) + 21 :len(message.content)]
+        elif texte.startswith(config['prefix'] + 'chifoumi') :
+            texte = message.content[len(config['prefix']) + 9 :len(message.content)]
         
-        date = str(datetime.now())[0:19]
-        print(date +' : Connecté en temps que {0} !'.format(self.user))
-        main_channel = client.get_channel(693103058086789130)
+        print(texte)
         
+        if texte == '' :
+            await message.channel.send('Pour jouer, envoie \'!pierrefeuilleciseaux\' ou \'chifoumi\' suivi de 🪨 , ✂️ ou 🧻')
+        
+        elif texte == '🪨' or texte == '✂️' or texte == '🧻' :
 
+            username = '{0.author.id}'.format(message)
 
-    async def on_member_join(self, member):
-        await client.send_message(member, 'Prompt.')
+            if (username + ('.json')) not in os.listdir(usersFiles) :
+                print('Nouveau joueur : ',username)
+                openFile(usersFiles,username,'w',{"games":0, "wins": 0, "money":100, "daily":0, "derniereconnexion":0, "champsdepatate":1, "ferme": 0})
 
+            userData = openFile(usersFiles,username,'r',0)
 
-    async def on_message(self, message):
-        date = str(datetime.now())[0:19]
-        print(date + ' : Message de {0.author} ({0.author.id}) : {0.content}'.format(message))
+            if texte == choix :
+                resultat = ('Dommage, égalité !')
+        
+            else : 
+                if (texte == emojiRock and choix == emojiScissors) or (texte == emojiScissors and choix == emojiPaper) or (texte == emojiPaper and choix == emojiRock) :
+                    resultat = ('Bien joué tu m\'as battu (crois pas t\'es fort c\'est aléatoire ^^).')
+                    userData['wins'] += 1
+            
+                else :
+                    resultat = ('Enfait t\'es eclatax')
 
+            userData['games'] += 1
+            
+            openFile(usersFiles,username,'w',userData)    
+            score =  (str(userData['wins']/userData['games']*100))[0:4]
+            arguments = 'Contre {0.author}'.format(message)
 
-        if message.content.startswith('!help'): #affiche toutes les commandes du bot
+            await message.delete()
 
-            arguments = 'Message invoqué par {0.author}'.format(message)
-
-            embed=discord.Embed(title='Commande disponibles par drawbot 2.0 :', description='Aujourd\'hui, je suis assez limité comme bot, mais avec le temps, je deviendrais extremement puissant haha\n\n!help : affiche ce message \n!counter : compte le nombre de caractères de votre message \n!tesbg : ajoute un réaction \'spéciale\' au message \n!pierrefeuilleciseaux ou !chifoumi : partie de pierre feuille ciseaux contre moi \n!ascii : tranforme du texte en ascii \n!issou : issou \n!score : affiche le score du joueur demandé \n!casino : permet de jouer au casino', color=0x11a4d4)
-            embed.add_field(name=arguments, value= 'Pour apprendre comment utiliser les commandes, il suffit de taper la commande', inline=False)
+            embed=discord.Embed(title=arguments, description=texte + ' vs ' + choix, color=0xababab)
+            embed.set_author(name="Pierre, feuilles, ciseaux !")
+            embed.set_footer(text=resultat + '\nTon ratio de victoire est de ' + score + '%')
             await message.channel.send(embed=embed)
 
-        if message.content.startswith('!counter'): #compte le nombre de caractères du message
-            
-            alphabet="abcdefghijklmnopqrstuvwxyz0123456789éèêëàâäôöîïùûüç!\"#$%&'()*+,-./0123456789:;<=>?@[]^_`{|}~"
-            texte = message.content
-            texte = texte[8:len(texte)]
-            lettre = int(0)
-            arguments = ''
+        else :
 
-            while lettre != (len(alphabet)) :
-                if alphabet[lettre] in texte :
-                    arguments = str(alphabet[lettre]) + ' est présent ' + str(texte.count(alphabet[lettre])) + ' fois !'
-                    await message.channel.send(arguments)
-                lettre += 1
+            await message.channel.send('Je... suis pas sûr que tu ai bien compris les règles')
 
-        if message.content.startswith('!tesbg'): #ajoute un réaction au message
+    if message.content.startswith(config['prefix'] + 'help'): #affiche toutes les commandes du bot
 
-            await message.add_reaction('🇹')
-            await message.add_reaction('🇴')
-            await message.add_reaction('ℹ️')
-            await message.add_reaction('🇦')
-            await message.add_reaction('🇺')
-            await message.add_reaction('🇸')
-            await message.add_reaction('🇮')
+        arguments = 'Aujourd\'hui, je suis assez limité comme bot, mais avec le temps, je deviendrais extremement puissant haha\n\n**' + config['prefix'] + 'help :** affiche ce message \n**' + config['prefix'] + 'counter :** compte le nombre de caractères de votre message \n**' + config['prefix'] + 'pierrefeuilleciseaux** ou **' + config['prefix'] + 'chifoumi :** partie de pierre feuille ciseaux contre moi \n**' + config['prefix'] + 'ascii :** tranforme du texte en ascii \n**' + config['prefix'] + 'issou :** issou \n**' + config['prefix'] + 'score :** affiche le score du joueur demandé \n**' + config['prefix'] + 'casino :** permet de jouer au casino \n**' + config['prefix'] + 'daily :** récupère les récompenses journalières \n** ' + config['prefix'] + 'bug :** Sert a prévenir drawbu d\'un bug \n**' + config['prefix'] + 'prefix :** Sert a changer le prefix des commandes \n**!prefix reset :** Sert à reset le prefix quel qu\'il soit \n' + config['prefix'] + 'commande : Permet de faire de nouvelles commandes' + config['prefix'] + 'morpion : Permet de jouer au morpion \n**' + config['prefix'] + 'ping :** Permet de marquer de vérifier qu\'un site est en ligne \n**' + config['prefix'] + 'bye :** Le bot de déconnecte \n**' + config['prefix'] + 'idle :** Permet de jouer à un idle (trop bien)'
+        embed=discord.Embed(title='Commande disponibles par {0.user.name} :'.format(client) , description=arguments, color=0x11a4d4)
 
-        if message.content.startswith('!pierrefeuilleciseaux') or message.content.startswith('!chifoumi'): #partie de pierre feuille ciseaux contre le bot
+        arguments = 'Message invoqué par {0.author}'.format(message)
+        embed.add_field(name=arguments, value= 'Pour apprendre comment utiliser les commandes, il suffit de taper la commande', inline=False)
+        await message.channel.send(embed=embed)
 
-            emojiRock = '🪨'
-            emojiScissors = '✂️'
-            emojiPaper = '🧻'
-            choix = random.choice([emojiRock, emojiScissors, emojiPaper])
+    if message.content.startswith(config['prefix'] + 'counter'): #compte le nombre de caractères du message
+        
+        alphabet="abcdefghijklmnopqrstuvwxyz0123456789éèêëàâäôöîïùûüç!\"#$%&'()*+,-./0123456789:;<=>?@[]^_`{|}~"
+        texte = message.content[len(config['prefix']) + 7 :len(message.content)]
+        lettre = int(0)
+        arguments = ''
 
-            texte = message.content
+        while lettre != (len(alphabet)) :
+            if alphabet[lettre] in texte :
+                arguments = str(alphabet[lettre]) + ' est présent ' + str(texte.count(alphabet[lettre])) + ' fois !'
+                await message.channel.send(arguments)
+            lettre += 1
 
-            if texte.startswith('!pierrefeuilleciseaux') :
-                texte = texte[22:len(texte)]
-            elif texte.startswith('!chifoumi') :
-                texte = texte[10:len(texte)]
-            
+    if message.content.startswith(config['prefix'] + 'ascii'): #tranforme du texte en ascii
+        
+        texte = message.content[len(config['prefix']) + 6 :len(message.content)]
+
+        fontList = ['cybermedium','bubble','block','small','block','white_bubble','random-small','random-medium','random-large','random-xlarge','random','magic']
+        fontNum = 0
+        arguments = 0
+
+        while fontNum != len(fontList) :
+            if texte.startswith(fontList[fontNum]) :
+                texte = texte[len(fontList[fontNum]) + 1:len(texte)]
+                arguments = '```' + text2art(texte, font=fontList[fontNum]) + '```'
+            fontNum += 1
+        if arguments == 0 :
+            arguments = '```' + text2art(texte) + '```'
+
+
+        if len(arguments) <= 2000 :
             if texte == '' :
-                await message.channel.send('Pour jouer, envoie \'!pierrefeuilleciseaux\' ou \'chifoumi\' suivi de 🪨 , ✂️ ou 🧻')
-            
-            elif texte == '🪨' or texte == '✂️' or texte == '🧻' :
+                await message.channel.send('Rajoue du texte après le \'!ascii\' pour que j\'affiche un résultat. \nTu peux aussi écrire avec différentes polices. Pour ce faire, rajoute \'cybermedium\', \'bubble\', \'block\', \'small\', \'block\', \'white_bubble\', \'random\', \'random-small\', \'random-medium\', \'random-large\', \'random-xlarge\' ou \'magic\' après le \'!ascii\'.')
+            else :
+                await message.channel.send(arguments)
+        else :
+            await message.channel.send('Désolé, la phrase est trop grande')
 
+    if message.content.startswith(config['prefix'] + 'issou'): #issou
 
-                username = '{0.author.id}'.format(message)
-                file = 'users/' + username + '.json'
+        await message.delete() 
+        await message.channel.send('https://tenor.com/view/risitas-main-dent-issou-laugh-gif-9505807')
 
-                listFile = os.listdir('users')
+    if message.content.startswith(config['prefix'] + 'casino'): #permet de jouer au casino
 
-                if (username + ('.json')) in listFile :
-                    print('joueur ',username,'deja present')
-                else :
-                    print('nouveau joueur : ',username)
-                    with open(file, 'w') as jsonFile:
-                        json.dump({"games":0,"wins": 0, "money": 100, "daily":0}, jsonFile)
-                        jsonFile.close()
+        texte = message.content[len(config['prefix']) + 7 :len(message.content)]
 
-                with open(file) as jsonFile:
-                    userData = json.load(jsonFile)
-                    jsonFile.close()
+        if texte == '' :
+            await message.channel.send('Pour jouer, mise une somme après le \'!casino\'.Tu commence avec la modique somme de 100 d$ !')
 
+        elif '1' or '2' or '3' or '4' or '5' or '6' or '7' or '8' or '9' or '0' in texte :
 
-                if texte == choix :
-                    resultat = ('Dommage, égalité !')
-            
-                else : 
-                    if (texte == emojiRock and choix == emojiScissors) or (texte == emojiScissors and choix == emojiPaper) or (texte == emojiPaper and choix == emojiRock) :
-                        resultat = ('Bien joué tu m\'as battu (crois pas t\'es fort c\'est aléatoire ^^).')
-                        userData['wins'] += 1
-                
-                    else :
-                        resultat = ('Enfait t\'es eclatax')
+            money = int(''.join(list(filter(str.isdigit, texte))))
 
+            username = '{0.author.id}'.format(message)
 
-                with open(file, 'w') as jsonFile:
-                    userData['games'] += 1
-                    json.dump(userData, jsonFile)
-                    jsonFile.close()
-                    if userData['games'] == 0 :
-                        score = 'pas de parties'
-                    else :
-                        score = userData['wins']/userData['games']*100
-                    print (score)
+            resultat = random.choice(['gagné','perdu'])
 
+            if (username + ('.json')) not in os.listdir(usersFiles) :
+                print('nouveau joueur dans la base de donnée : ',username)
+                openFile(usersFiles,username,'w',{"games":0, "wins": 0, "money":100, "daily":0, "derniereconnexion":0, "champsdepatate":1, "ferme": 0})
+
+            userData = openFile(usersFiles,username,'r',0)
+
+            if (money <= 0) or (money > userData['money']) :
+                arguments = 'Désolé tu n\'a pas assez d\'argent pour jouer cette somme. Tu ne possède actuellement que ' + str(userData['money']) + ' d$.'
+                await message.channel.send(arguments)
+            elif money <= 0 :
+                await message.channel.send('Désolé tu est maintenant trop pauvre pour jouer...')
+            else :
+
+                if resultat == 'gagné' :
+                    userData['money'] += money
+                elif resultat == 'perdu' :
+                    userData['money'] -= money
+
+                openFile(usersFiles,username,'w',userData)
+
+                arguments = 'Tu as ' + resultat + ' ! Tu possède actuellement ' + str(userData['money']) + ' d$ !'
 
                 await message.delete()
 
-                arguments = 'Contre {0.author}'.format(message)
-
-                score = str(score)
-                score = score[0:4]
-
-                embed=discord.Embed(title=arguments, description=texte + ' vs ' + choix, color=0xababab)
-                embed.set_author(name="Pierre, feuilles, ciseaux !")
-                embed.set_footer(text=resultat + '\nTon ratio de victoire est de ' + score + '%')
+                embed=discord.Embed(title='{0.author}'.format(message) , description='Tu as ' + resultat + ' !', color=0xababab)
+                embed.set_author(name="Casino 🎲 💸")
+                embed.set_footer(text='Tu possède actuellement ' + str(userData['money']) + ' d$ ! Tu avais misé ' + str(money))
                 await message.channel.send(embed=embed)
 
-            else :
+        else :
+            await message.channel.send('Pour jouer, mise une somme après le \'!casino\'.Tu commence avec la modique somme de 100 d$ !')
 
-                await message.channel.send('Je... suis pas sûr que tu ai bien compris les règles')
-               
-        if message.content.startswith('!ascii'): #tranforme du texte en ascii
-            
-            texte = message.content
-            texte = texte[7:len(texte)]
+    if message.content.startswith(config['prefix'] + 'score'): #affiche le score d'un joueur
 
-            fontList = ['cybermedium','bubble','block','small','block','white_bubble','random-small','random-medium','random-large','random-xlarge','random','magic']
-            fontNum = 0
-            arguments = 0
+        username = message.content[len(config['prefix']) + 9 :len(message.content) - 1]
 
-            while fontNum != len(fontList) :
-                if texte.startswith(fontList[fontNum]) :
-                    texte = texte[len(fontList[fontNum]) + 1:len(texte)]
-                    arguments = '```' + text2art(texte, font=fontList[fontNum]) + '```'
-                fontNum += 1
-            if arguments == 0 :
-                arguments = '```' + text2art(texte) + '```'
+        if username == '' :
+            username = '{0.author.id}'.format(message)
+
+            userData = openFile(usersFiles,str(message.author.id),'r',0)
+            score = str(userData['wins']/userData['games']*100)
+            score = score[0:4]
+            arguments = 'Au **chifoumi**, le joueur ' + message.author.name + ' à un score de `' + score + '`% ! Sur `' + str(userData['games']) + '` parties jouées, il en a gagné `' + str(userData['wins']) + '` !\nEt il possède `' + str(userData['money']) + '` d$ !'
+            await message.channel.send(arguments)
+
+        elif (username + ('.json')) in os.listdir(usersFiles) :
+            userData = openFile(usersFiles,username,'r',0)
+    
+            score = str(userData['wins']/userData['games']*100)
+            score = score[0:4]
+            arguments = 'Au **chifoumi**, le joueur ' + message.author.name + ' à un score de `' + score + '`% ! Sur `' + str(userData['games']) + '` parties jouées, il en a gagné `' + str(userData['wins']) + '` !\nEt il possède `' + str(userData['money']) + '` d$ !'
+            await message.channel.send(arguments)
+        else :
+            await message.channel.send('Je ne connais pas ce joueur')
+
+    if message.content.startswith(config['prefix'] + 'daily') : #récupère les récompenses journalières
+
+        username = '{0.author.id}'.format(message)
+
+        if (username + ('.json')) not in os.listdir(usersFiles) :
+            openFile(usersFiles,username,'w',{"games":0, "wins": 0, "money":100, "daily":0, "derniereconnexion":0, "champsdepatate":1, "ferme": 0})
+
+        userData = openFile(usersFiles,username,'r',0)
+
+        if userData['daily'] == str(datetime.now())[0:10] :
+            arguments = 'Désolé, tu as déjà récupéré ton argent quotidient. Tu es à ' + str(userData['money']) + ' d$ !'
+            await message.channel.send(arguments)
+        else :
+            userData['money'] += 100
+            userData['daily'] = str(datetime.now())[0:10]
+            arguments = 'Tu as bien récupéré ton argent quotidient. Tu es à ' + str(userData['money']) + ' d$ !'
+            await message.channel.send(arguments)
+
+        openFile(usersFiles,username,'w',userData)
+
+    if message.content.startswith(config['prefix'] + 'hourly') : #récupère les récompenses journalières
+
+        username = '{0.author.id}'.format(message)
+
+        if (username + ('.json')) not in os.listdir(usersFiles) :
+            openFile(usersFiles,username,'w',{"games":0, "wins": 0, "money":100, "daily":0, "hourly": 0, "derniereconnexion":0, "champsdepatate":1, "ferme": 0})
+
+        userData = openFile(usersFiles,username,'r',0)
+
+        if userData['daily'] == str(datetime.now())[0:13] :
+            arguments = 'Désolé, tu as déjà récupéré ton argent cette heure. Tu es à `' + str(userData['money']) + '` d$ !'
+            await message.channel.send(arguments)
+        else :
+            userData['money'] += 20
+            userData['daily'] = str(datetime.now())[0:13]
+            arguments = 'Tu as bien récupéré ton argent de cette heure. Tu es à `' + str(userData['money']) + '` d$ !'
+            await message.channel.send(arguments)
+
+        openFile(usersFiles,username,'w',userData)
+
+    if message.content.startswith(config['prefix'] + 'bug') : #Sert a prévenir drawbu d'un bug
+
+        if message.channel.type is discord.ChannelType.private:
+            embed = discord.Embed(title ='[MP] | id : `' + str(message.author.id) + '`', description = 'message : `' + message.content[len(config['prefix']) + 4 :len(message.content)] + '`', color = 0xff0000)
+        else :
+            embed = discord.Embed(title ='[{0.guild}] #{0.channel} | id : `'.format(message) + str(message.author.id) + '`', description = 'message : `' + message.content[len(config['prefix']) + 4 :len(message.content)] + '`', color = 0xff0000)
+
+        embed.set_author(name='Bug signalé par ' + message.author.name)
+        await drawbuMP.send(embed = embed)
+
+        await message.channel.send('Message envoyé ! Merci de ton aide ^^')
+
+    if message.content.startswith(config['prefix'] + 'morpion') : #Permet de jouer au morpion
+
+        victoire = False
+        morpion = openFile(mainFiles,'morpion','r',0)
+
+        if morpion['player'] == "" :
+
+            morpion['player'] = '{0.author.id}'.format(message)
+
+            await message.channel.send('BIENVENUE DANS LE MORPION ! Toutes les cases sont égales aux touches du clavier.')
+
+            morpion['joueur'] = random.choice(['X','O'])
+
+            if morpion['joueur'] == 'X' :
+                morpion['bot'] = 'O'
+            elif morpion['joueur'] == 'O' :
+                morpion['bot'] = 'X'
+
+            if random.choice([0,1]) == 0 :
+                arguments = 'Je commence ! Tu joues les ":' + morpion['joueur'].lower() + ':" !'
+                await message.channel.send(arguments)
+                morpion['tours'] += 1
+                entree = random.choice([1,2,3,4,5,6,7,8,9])
+                plateau = morpion['plateau'][0:entree] + morpion['bot'] +  morpion['plateau'][entree+1:10]
+
+                embed=discord.Embed(title='Partie de morpion avec {0.author.name}'.format(message), color=0x009dff)
+                embed.add_field(name='Plateau :', value=affichageMorpion(plateau), inline=True)
+                embed.add_field(name='A ton tour ( ' + morpion['joueur'] + ' )', value=str(morpion['tours']) + ' coups', inline=True)
+                await message.channel.send(embed=embed)
+
+                morpion['plateau'] = plateau
+                openFile(mainFiles,'morpion','w',morpion)
+
+            else : 
+                arguments = 'Tu commences avec les "' + morpion['joueur'] + '" !'
+                await message.channel.send(arguments)
 
 
-            if len(arguments) <= 2000 :
-                if texte == '' :
-                    await message.channel.send('Rajoue du texte après le \'!ascii\' pour que j\'affiche un résultat. \nTu peux aussi écrire avec différentes polices. Pour ce faire, rajoute \'cybermedium\', \'bubble\', \'block\', \'small\', \'block\', \'white_bubble\', \'random\', \'random-small\', \'random-medium\', \'random-large\', \'random-xlarge\' ou \'magic\' après le \'!ascii\'.')
+            openFile(mainFiles,'morpion','w',morpion)
+
+        elif morpion['player'] == '{0.author.id}'.format(message) :
+            await message.delete()
+            entree = message.content[len(config['prefix']) + 8 :len(message.content)]
+            if (entree == '1') or (entree == '2') or (entree == '3') or (entree == '4') or (entree == '5') or (entree == '6') or (entree == '7') or (entree == '8') or (entree == '9') :
+                entree = int(entree)
+                if (morpion['plateau'][entree] == 'X') or (morpion['plateau'][entree] == 'O'):
+                    await message.channel.send('Quelqu\'un à déjà joué sur cette case !')
                 else :
-                    await message.channel.send(arguments)
-            else :
-                await message.channel.send('Désolé, la phrase est trop grande')
-        
-        if message.content.startswith('!issou'): #issou
+                    morpion['tours'] += 1
+                    plateau = morpion['plateau'][0:entree] + morpion['joueur'] +  morpion['plateau'][entree+1:10]
 
-            await message.delete() 
-            await message.channel.send('https://tenor.com/view/risitas-main-dent-issou-laugh-gif-9505807')
-
-        if message.content.startswith('!casino'): #permet de jouer au casino
-
-            texte = message.content
-            texte = texte[8:len(texte)]
-
-            if texte == '' :
-                await message.channel.send('Pour jouer, mise une somme après le \'!casino\'.Tu commence avec la modique somme de 100 d$ !')
-            elif texte == 'reset' :
-                
-                username = '{0.author.id}'.format(message)
-                file = 'users/' + username + '.json'
-                listFile = os.listdir('users')
-
-                if (username + ('.json')) in listFile :
-                    print('joueur ',username,'deja present')
-                else :
-                    print('nouveau joueur : ',username)
-                    with open(file, 'w') as jsonFile:
-                        json.dump({"games":0,"wins": 0, "money":100, "daily":0}, jsonFile)
-                        jsonFile.close()
-
-                with open(file) as jsonFile:
-                    userData = json.load(jsonFile)
-                    jsonFile.close()
-
-                userData['money'] = 100
-                
-                with open(file, 'w') as jsonFile:
-                        json.dump(userData, jsonFile)
-                        jsonFile.close()
-
-                await message.channel.send('Ton compte à été remis à zero, tu possède maintenant 100 d$ !')
-
-            elif '1' or '2' or '3' or '4' or '5' or '6' or '7' or '8' or '9' or '0' in texte :
-
-                money = int(''.join(list(filter(str.isdigit, texte))))
-
-                username = '{0.author.id}'.format(message)
-                file = 'users/' + username + '.json'
-                listFile = os.listdir('users')
-
-                resultat = random.choice(['gagné','perdu'])
-
-                if (username + ('.json')) in listFile :
-                    print('joueur ',username,'deja present')
-                else :
-                    print('nouveau joueur : ',username)
-                    with open(file, 'w') as jsonFile:
-                        json.dump({"games":0,"wins": 0, "money":100, "daily":0}, jsonFile)
-                        jsonFile.close()
-
-                with open(file) as jsonFile:
-                    userData = json.load(jsonFile)
-                    jsonFile.close()
-
-                
-                if (money <= 0) or (money > userData['money']) :
-                    arguments = 'Désolé tu n\'a pas assez d\'argent pour jouer cette somme. Tu ne possède actuellement que ' + str(userData['money']) + ' d$.'
-                    await message.channel.send(arguments)
-                elif money <= 0 :
-                    await message.channel.send('Désolé tu est maintenant trop pauvre pour jouer...')
-                else :
-
-                    if resultat == 'gagné' :
-                        userData['money'] += money
-                    elif resultat == 'perdu' :
-                        userData['money'] -= money
-
-                    with open(file, 'w') as jsonFile:
-                        json.dump(userData, jsonFile)
-                        jsonFile.close()
-
-                    arguments = 'Tu as ' + resultat + ' ! Tu possède actuellement ' + str(userData['money']) + ' d$ !'
-
-                    await message.delete()
-
-                    embed=discord.Embed(title='{0.author}'.format(message) , description='Tu as ' + resultat + ' !', color=0xababab)
-                    embed.set_author(name="Casino 🎲 💸")
-                    embed.set_footer(text='Tu possède actuellement ' + str(userData['money']) + ' d$ ! Tu avais misé ' + str(money))
+                    embed=discord.Embed(title='Partie de morpion avec {0.author.name}'.format(message), color=0x009dff)
+                    embed.add_field(name='Plateau :', value=affichageMorpion(plateau), inline=True)
+                    embed.add_field(name='Au tour du bot', value=str(morpion['tours']) + ' coups', inline=True)
                     await message.channel.send(embed=embed)
 
+                    morpion['plateau'] = plateau
+                    morpion['dernier'] = morpion['joueur']
+                    openFile(mainFiles,'morpion','w',morpion)
 
-                    username =  '{0.author.id}'.format(message)
-
+                    if plateau[1]==plateau[2]==plateau[3] or plateau[4]==plateau[5]==plateau[6] or plateau[7]==plateau[8]==plateau[9] or plateau[1]==plateau[4]==plateau[7] or plateau[2]==plateau[5]==plateau[8] or plateau[3]==plateau[6]==plateau[9] or plateau[1]==plateau[5]==plateau[9] or plateau[3]==plateau[5]==plateau[7] :
+                        victoire = True
+                        morpion['tours'] = 9 
             
-                    file = 'users/' + username + '.json'
-                    listFile = os.listdir('users')
+                    if morpion['tours'] < 9 :
+                        morpion['tours'] += 1
+                        entree = random.choice([1,2,3,4,5,6,7,8,9])
+                        while (morpion['plateau'][entree] == 'X') or (morpion['plateau'][entree] == 'O'):
+                            entree = random.choice([1,2,3,4,5,6,7,8,9])
+                        plateau = morpion['plateau'][0:entree] + morpion['bot'] +  morpion['plateau'][entree+1:10]
 
-                    
-                    with open(file) as jsonFile:
-                        userData = json.load(jsonFile)
-                        jsonFile.close()
+                        embed=discord.Embed(title='Partie de morpion avec {0.author.name}'.format(message), color=0x009dff)
+                        embed.add_field(name='Plateau :', value=affichageMorpion(plateau), inline=True)
+                        embed.add_field(name='A ton tour ( ' + morpion['joueur'] + ' )', value=str(morpion['tours']) + ' coups', inline=True)
+                        await message.channel.send(embed=embed)
 
-                    userMoney = userData['money']
+                        morpion['plateau'] = plateau
+                        morpion['dernier'] = morpion['bot']
+                        openFile(mainFiles,'morpion','w',morpion)
 
+                        if plateau[1]==plateau[2]==plateau[3] or plateau[4]==plateau[5]==plateau[6] or plateau[7]==plateau[8]==plateau[9] or plateau[1]==plateau[4]==plateau[7] or plateau[2]==plateau[5]==plateau[8] or plateau[3]==plateau[6]==plateau[9] or plateau[1]==plateau[5]==plateau[9] or plateau[3]==plateau[5]==plateau[7] :
+                            victoire = True
+                            morpion['tours'] = 9 
 
-                    file = 'classement.json'
-                    listFile = os.listdir('.')
-
-                    classement = 1
-
-                    if (file) not in listFile :
-                        print ('ce fichier n\'existe pas')
-                    else : 
-                        with open(file) as jsonFile:
-                            classementData = json.load(jsonFile)
-                            jsonFile.close()
-
-                while classement != 10 :
-                    if classementData[str(classement)] == username :
-                        classement = 10
-    
-                    else :
-
-                        concurrent = classementData[str(classement)]
-                        if concurrent != 0 :
-                            with open('users/' + str(concurrent) + '.json') as jsonFile:
-                                userData = json.load(jsonFile)
-                                jsonFile.close()
-
-                            print(userData['money'] , userMoney)
-
-                            if userData['money'] < userMoney :
-                                classementData[str(classement)] = username
-                                print('le joueur ' + str(username) + 'est maintenant ' + str(classement) + 'ième')
-                                if username == '{0.author.id}'.format(message) :
-                                    await message.channel.send('Vous êtes maintenant numéro ' + str(classement) + ' dans le classement')
-                                username = concurrent
-
-                            classement += 1
-                
+                if morpion['tours'] == 9:
+                    if victoire == True:
+                        if morpion['dernier'] == morpion['bot'] :
+                            await message.channel.send('T\'as perdu nullos')
                         else :
-                            classementData[str(classement)] = username
-                            print('le joueur ' + str(username) + ' est maintenant ' + str(classement) + 'ième')
-                            classement = 10
-
-                        with open(file, 'w') as jsonFile:
-                            json.dump(classementData, jsonFile)
-                            jsonFile.close()
-
-            else :
-                await message.channel.send('Pour jouer, mise une somme après le \'!casino\'.Tu commence avec la modique somme de 100 d$ !')
-
-        if message.content.startswith('!score'): #affiche le score d'un joueur
-
-            username = message.content
-            username = username[10:28]
-
-            if username == '' :
-                username = '{0.author.id}'.format(message)
-            
-            file = 'users/' + username + '.json'
-
-            listFile = os.listdir('users')
-
-            if (username + ('.json')) in listFile :
-                with open(file) as jsonFile:
-                    userData = json.load(jsonFile)
-                    jsonFile.close()
-      
-                score = str(userData['wins']/userData['games']*100)
-                score = score[0:4]
-                arguments = 'Au chifoumi, ce joueur à un score de ' + score + '% ! Sur ' + str(userData['games']) + ' parties jouées, il en a gagné ' + str(userData['wins']) + ' !\nEt au casino, ce joueur à un score de ' + str(userData['money']) + ' d$ !'
-                await message.channel.send(arguments)
-            else :
-                await message.channel.send('Je ne connais pas ce joueur')
-
-        if message.content.startswith('!daily') : #récupère les récompenses journalières
-
-            username = '{0.author.id}'.format(message)
-            
-            file = 'users/' + username + '.json'
-            listFile = os.listdir('users')
-
-            if (username + ('.json')) not in listFile :
-                with open(file, 'w') as jsonFile:
-                    json.dump({"games":0,"wins": 0, "money":100, "daily":0}, jsonFile)
-                    jsonFile.close()
-
-            with open(file) as jsonFile:
-                userData = json.load(jsonFile)
-                jsonFile.close()
-
-            if userData['daily'] == str(datetime.now())[0:10] :
-                arguments = 'Désolé, tu as déjà récupéré ton argent quotidient. Tu es à ' + str(userData['money']) + ' d$ !'
-                await message.channel.send(arguments)
-            else :
-                userData['money'] += 100
-                userData['daily'] = str(datetime.now())[0:10]
-                arguments = 'Tu as bien récupéré ton argent quotidient. Tu es à ' + str(userData['money']) + ' d$ !'
-                await message.channel.send(arguments)
-
-            with open(file, 'w') as jsonFile:
-                json.dump(userData, jsonFile)
-                jsonFile.close()
-
-            username =  '{0.author.id}'.format(message)
-
-            
-            file = 'users/' + username + '.json'
-            listFile = os.listdir('users')
-
+                            await message.channel.send('Bien joué... t\'as gagné...')
+                    else:
+                        await message.channel.send("Egalite, dommage !")
                     
-            with open(file) as jsonFile:
-                userData = json.load(jsonFile)
-                jsonFile.close()
+                    
+                    morpion['player'] = ""
+                    morpion['tours'] = 0
+                    morpion['joueur'] = "O"
+                    morpion['entree'] = 0
+                    morpion['victoire'] = False
+                    morpion['plateau'] = " 123456789"
+                    morpion['bot'] = ""
+                    morpion['dernier'] = ""
+                    openFile(mainFiles,'morpion','w',morpion)
 
-            userMoney = userData['money']
-
-
-            file = 'classement.json'
-            listFile = os.listdir('.')
-
-            classement = 1
-
-            if (file) not in listFile :
-                print ('ce fichier n\'existe pas')
-            else : 
-                with open(file) as jsonFile:
-                    classementData = json.load(jsonFile)
-                    jsonFile.close()
-
-            while classement != 10 :
-                if classementData[str(classement)] == username :
-                    classement = 10
-    
-                else :
-
-                    concurrent = classementData[str(classement)]
-                    if concurrent != 0 :
-                        with open('users/' + str(concurrent) + '.json') as jsonFile:
-                            userData = json.load(jsonFile)
-                            jsonFile.close()
-
-                        print(userData['money'] , userMoney)
-
-                        if userData['money'] < userMoney :
-                            classementData[str(classement)] = username
-                            print('le joueur ' + str(username) + 'est maintenant ' + str(classement) + 'ième')
-                            if username == '{0.author.id}'.format(message) :
-                                await message.channel.send('Vous êtes maintenant numéro ' + str(classement) + ' dans le classement')
-                            username = concurrent
-
-                        classement += 1
+            elif entree == 'stop' :
                 
-                    else :
-                        classementData[str(classement)] = username
-                        print('le joueur ' + str(username) + ' est maintenant ' + str(classement) + 'ième')
-                        classement = 10
+                morpion['player'] = ""
+                morpion['tours'] = 0
+                morpion['joueur'] = "O"
+                morpion['entree'] = 0
+                morpion['victoire'] = False
+                morpion['plateau'] = " 123456789"
+                morpion['bot'] = ""
+                morpion['dernier'] = ""
+                openFile(mainFiles,'morpion','w',morpion)
+                await message.channel.send('Fin de la partie pour cause d\'abandon')
+                
+                
 
-                    with open(file, 'w') as jsonFile:
-                        json.dump(classementData, jsonFile)
-                        jsonFile.close()
-      
-        if message.content.startswith('!classement') : #affiche les plus grosses fortunes
+            else :
+                arguments = 'Pour jouer, il faut envoyer ' + config['prefix'] + 'morpion suivi d\'un chiffre'
+                await message.channel.send(arguments)
+                await message.channel.send(message.content[len(config['prefix']) + 8 :len(message.content)])
+               
+            
+            openFile(mainFiles,'morpion','w',morpion)
 
-            listFile = os.listdir('.')
-            if 'classement.json' in listFile :
-                with open('classement.json') as jsonFile:
-                    classementData = json.load(jsonFile)
-                    jsonFile.close()
+        else :
+            arguments = 'Désolé, une partie est déja en cours avec <@!' + morpion['player'] + '> !'.format(message)
+            await message.channel.send(arguments)
 
-            userData = ''
-            listUsers = os.listdir('./users')
-            classement = 1
-            arguments = ''
-            while classement != 10 :
-                if classementData[str(classement)] != 0 :
-                    if 'classement.json' in listFile :
-                        with open('users/'+classementData[str(classement)] +'.json') as jsonFile:
-                            userData = json.load(jsonFile)
-                            jsonFile.close()
-                    arguments += '\nNuméro ' + str(classement) + ' : <@!' + classementData[str(classement)] + '> avec ' + str(userData['money']) + ' $d'
-                    classement += 1
-                else : 
-                    classement = 10
-            embed = discord.Embed(title="Classement du casino", description=arguments)
+    if message.content.startswith(config['prefix'] + 'commande') : #Permet de faire de nouvelles commandes
+        texte = message.content[len(config['prefix'])+9:len(message.content)]
+        lettre = 0
+        commandes = openFile(mainFiles,'commandes','r',0)
+        while texte[lettre] != ' ' :
+            lettre += 1
+            if  lettre == len(texte) :
+                break
+
+        if texte[0:lettre] == 'del' :
+            if texte[lettre + 1:len(texte)] in commandes.keys() :
+                del commandes[texte[lettre + 1:len(texte)]]
+                arguments = 'Commande ' + texte[lettre + 1:len(texte)] + ' enlevée avec succès !'
+                await message.channel.send(arguments)
+            else :
+                await message.channel.send('Désolé, y\'a pas...')
+        elif lettre == len(texte) :
+            await message.channel.send('Désolé, mais il faut un nom et un texte pour la commande')
+        elif len(texte[lettre + 1:len(texte)]) > 200 : 
+            await message.channel.send('Désolé, trop de caractères')
+        else :
+            commandes[texte[0:lettre]] = texte[lettre + 1:len(texte)]
+            arguments = 'Commande ' + texte[lettre + 1:len(texte)] + ' bien ajoutée !'
+            await message.channel.send(arguments)
+
+        openFile(mainFiles,'commandes','w',commandes)
+
+    if message.content.startswith(config['prefix'] + 'prefix') : #Sert a changer le prefix des commandes
+        if message.content[len(config['prefix']) + 7 :len(message.content)] == '' :
+            await message.channel.send('Pour changer le prefix, veuillez le mettre à la suite de la commande.')
+        else :
+            config['prefix'] = message.content[len(config["prefix"]) + 7 :len(message.content)]
+            openFile(mainFiles,'config','w',config)
+            arguments = 'Le prefix à bien été changé pour ' + config['prefix'] + ' !'
+            await message.channel.send(arguments)
+
+    if message.content.startswith(config['prefix'] + 'idle') : #permet de jouer au jeu idle
+        
+        texte = message.content[len(config['prefix']) + 5:len(message.content)]
+
+        if texte.startswith('help') :
+            embed = discord.Embed(title='Tutoriel :', description= f'Vous pouvez acheter des propriétés à l\'aide de la commande `{config["prefix"]}idle buy` suivi de l\'émoji de la propriété et finalement du nombre de propriétés que vous voulez acheter.\nVous commencez cette aventure avec rien. Seuls vos revenus journaliers (`{config["prefix"]}daily`) comme source de revenus. Mais il est temps d\'étendre votre empire et faire du revenus ! Achetez dès maintenant des propriétés !\nEssayez la commande `{config["prefix"]}idle`.\n\n**Règles :**\n - Au début du jeu, seuls les champs de patate sont achetable. Mais avec vos revenus, vous pourrez débloquer de nouvelles possibilités.\n - Au début, vous ne pouvez récupérer les revenus des {idleJson["afklesstime"]} dernières heures seulements.\n\n**Listes des commandes :**\n- `;idle` : affiche vos propriétés\n- `;idle help` : affiche cette fenêtre\n- `;idle buy` : permet d\'acheter une ou plusieurs propriétés\n- `;idle unlock` : permet de débloquer une catégorie\n - `{config["prefix"]}idle upmaxtime` : permet d\'acheter du temps d\'AFK supplémentaire.\n\n**Exemple :** pour acheter 3 champs de patates, je dois faire "**{config["prefix"]}idle buy :potato: 3**". \n\n**Liste des propriétés achetables :** \n- :potato: Champ de patate (prix : `{idleJson["patates"]["prix"]} d$`, revenus : `{idleJson["patates"]["revenus"]} d$/h`)\n- :corn: Champ de maïs (prix : `{idleJson["mais"]["prix"]} d$`, revenus : `{idleJson["mais"]["revenus"]} d$/h`, débloquage : `{idleJson["mais"]["unlock"]} d$`)\n- :carrot: Champ de carrotes (prix : `{idleJson["carrotes"]["prix"]} d$`, revenus : `{idleJson["carrotes"]["revenus"]} d$/h`, débloquage : `{idleJson["carrotes"]["unlock"]} d$`\n- :hatching_chick: Poulailler (prix : `{idleJson["poulailler"]["prix"]} d$`, revenus : `{idleJson["poulailler"]["revenus"]} d$/h`, débloquage : `{idleJson["poulailler"]["unlock"]} d$`)', color=0xababab)
+            embed.set_author(name='Bienvenue dans le IDLE, ' + message.author.name + ' !')
+            embed.set_footer(text= f'Pour jouer, vous devez avoir de l\'argent ! Vous pouvez dans ce jeu acheter des propriétées afin de faire du revenu ! Pour afficher cette fenêtre, faites {config["prefix"]}idle help')
             await message.channel.send(embed=embed)
 
+        else :
+            if texte.startswith('buy') :
+                texte = texte[4:len(texte)]
+                if texte.startswith('🥔') or texte.startswith('🌽') or texte.startswith('🥕') or texte.startswith('🐣'):
+                    for emoji,item in {'🥔':'patates','🌽':'mais','🥕':'carrotes','🐣':'poulailler'}.items() :
+                        if texte.startswith(emoji) :
+                            choix = item
+                    texte = texte[2:len(texte)]
+                    try :
+                        texte = int(texte)
+                    except :
+                        await message.channel.send('Veuillez inclure un chiffre entier pour procéder à l\'achat. Plus d\'infos avec **' + config['prefix'] + 'idle help**.')
+                    else :
+                        if (userData[choix] + texte) > 50:
+                            if userData[choix] >= 50 :
+                                await message.channel.send(f'Désolé, vous avez déja atteints la limite de {choix}.')
+                            else :
+                                texte = 50 - userData[choix]
+                                await message.channel.send(f'On ne peut acheter que 50 fois une propriété, ducoup vous ne pouvez en acheter que {texte}.')
+                        else :
+                            if userData['money'] >= texte * idleJson[choix]['prix'] :
+                                if (userData[choix] != 0) or (idleJson[choix]['unlock'] == 0) :
+                                    userData['money'] -= texte * idleJson[choix]['prix']
+                                    userData[choix] += texte
+                                    await message.channel.send('Achat effectué de **' + str(texte) + ' ' + choix + '**.')
+                                else :
+                                    await message.channel.send('Désolé, vous devez d\'abord débloquer cette catégorie. Faites **' + config['prefix'] + 'idle help** pour plus d\'infos.')
+                            else :
+                                await message.channel.send('Vous n\'avez pas assez pour acheter **' + str(texte) + ' ' + choix + '**. Vous possedez actuellement **' + str(userData['money']) + ' d$**. Il vous manque donc **' + str((texte * idleJson[choix]['prix'])-userData['money']) + ' d$**')
+                else :
+                    await message.channel.send('La commande d\'achat est invalide. Plus d\'infos avec **' + config['prefix'] + 'idle help**.')
+            
+            elif texte.startswith('unlock') :
+                texte = texte[7:len(texte)]
+                if texte.startswith('🥔') or texte.startswith('🌽') or texte.startswith('🥕') or texte.startswith('🐣'):
+                    for emoji,item in {'🥔':'patates','🌽':'mais','🥕':'carrotes','🐣':'poulailler'}.items() :
+                        if texte.startswith(emoji) :
+                            choix = item
+                    texte = texte[2:len(texte)]
+                    if userData['money'] >= idleJson[choix]['unlock'] :
+                        if userData[choix] == 0:
+                            userData['money'] -= idleJson[choix]['unlock']
+                            userData[choix] += 1
+                            await message.channel.send('Vous avez débloqué **' + choix + '** !')
+                        else :
+                            await message.channel.send('Désolé, vous avez déjà débloqué cette catégorie. Faites **' + config['prefix'] + 'idle help** pour plus d\'infos.')
+                    else :
+                        await message.channel.send('Vous n\'avez pas assez pour débloquer **' + choix + '**. Vous possedez actuellement **' + str(userData['money']) + ' d$**. Il vous manque donc **' + str(idleJson[choix]['unlock'] - userData['money']) + ' d$**')
+                else :
+                    await message.channel.send('La commande de débloquage est invalide. Plus d\'infos avec **' + config['prefix'] + 'idle help**.')
+            
+            elif texte.startswith('upmaxtime'):
+                if texte.startswith('upmaxtime buy') :
+                    if userData['money'] >= (2**(userData["idleMaxTime"]-idleJson["afklesstime"])*100):
+                        userData['money'] -= 2**(userData["idleMaxTime"]-idleJson["afklesstime"])*100
+                        userData['idleMaxTime'] += 1
+                        await message.channel.send(f'Achat d\'une heure d\'absence en plus réussie : `{2**(userData["idleMaxTime"]-idleJson["afklesstime"])*100} d$`. Vous pouvez maintenant vous absenter `{userData["idleMaxTime"]}h`. La prochaine coûtera : `{2**(userData["idleMaxTime"]-idleJson["afklesstime"]+1)*100} d$`.')
+                    else :
+                        await message.channel.send(f'Vous n\'avez pas assez d\'argent pour acheter une heure supplémentaire. Vous avez besoin de `{2**(userData["idleMaxTime"]-idleJson["afklesstime"])*100} d$`.')
+                else :
+                    await message.channel.send(f'Prix d\'une heure d\'absence en plus : `{2**(userData["idleMaxTime"]-idleJson["afklesstime"])*100} d$`.\nPour acheter, faites `{config["prefix"]}upmaxtime buy`.')
 
-        date = str(datetime.now())[0:19]
-        logsFile = open('logs.txt','a')
-        arguments = ('\n' + date + ' : Message de {0.author} ({0.author.id}) : {0.content}').format(message)
-        logsFile.write(arguments) 
-        logsFile.close()
+            openFile(usersFiles,str(message.author.id),'w',userData)
 
-        
+            arguments = '- :potato: Champ de patate : `' + str(userData['patates']) + '` , revenus : `' + str(idleJson['patates']['revenus'] * userData['patates']) + ' d$/h`'
+            revenus = idleJson['patates']['revenus'] * userData['patates']
+            for item,emoji in {'mais':'\n- :corn: ','carrotes':'\n- :carrot: ','poulailler':'\n- :hatching_chick: '}.items() :
+                if userData[item] > 0 :
+                    if item == 'poulailler' :
+                        arguments += emoji + ' Poulailler : `' + str(userData[item]) + '` , revenus : `' + str(idleJson[item]['revenus'] * userData[item]) + ' d$/h`'
+                    else :
+                        arguments += emoji + 'Champ de ' + item + ' : `' + str(userData[item]) + '` , revenus : `' + str(idleJson[item]['revenus'] * userData[item]) + ' d$/h`'
+                    revenus += idleJson[item]['revenus'] * userData[item]
+                else :
+                    arguments += '\n- :no_entry_sign: **Bloqué** - débloquage : **' + str(idleJson[item]['unlock']) + ' d$**'
 
-client = MyClient()
-client.run(token)
+            derniereconnexion = userData['derniereconnexion']
+            derniereconnexion = datetime(int(derniereconnexion[0:4]), int(derniereconnexion[5:7]), int(derniereconnexion[8:10]), int(derniereconnexion[11:13]), 0, 0)
+            derniereconnexion = ((derniereconnexion.year-1)*365 + mois(derniereconnexion.month) + (derniereconnexion.day-1))*24 + derniereconnexion.hour
+            mtn = datetime.now()
+            mtn = ((mtn.year-1)*365 + mois(mtn.month) + (mtn.day-1))*24 + mtn.hour
+            absence = mtn-derniereconnexion
+            if str(absence) != '0' :
+                if absence > userData['idleMaxTime']:
+                    absence = userData['idleMaxTime']
+                    await message.channel.send(f'Vous avez été absent pendant `{mtn-derniereconnexion}h` ! Malheuresement, vous ne pouvez récupérer que les revenus des `{userData["idleMaxTime"]} dernières heures`.\nVous avez donc gagné `{revenus*absence} d$`')
+                else :
+                    await message.channel.send(f'Vous avez été absent pendant `{absence}h` !\nVous avez donc gagné `{revenus*absence} d$`')
+                userData['money'] += revenus*absence
+                userData['derniereconnexion'] = str(datetime.now())
+            
+            openFile(usersFiles,str(message.author.id),'w',userData)
+
+            embed = discord.Embed(title='Liste des propriétées :', description=arguments + '\n\n**Argent :** `' + str(userData['money']) + ' d$`\n**Revenus :** `' + str(revenus) + ' d$/h`\n**Temps d\'absence max :** `' + str(userData['idleMaxTime']) + 'h`', color=0xababab)
+            embed.set_author(name='IDLE - ' + message.author.name)
+            embed.set_footer(text= 'Faites ' + config['prefix'] + 'idle help pour plus d\'infos')
+            await message.channel.send(embed=embed)
+
+    if message.content.startswith(config['prefix'] + 'announceChannel') : #dis quel est le salon d'annonce des nouveaux joueurs
+        if message.content[17:len(message.content)] == 'del':
+            if server['welcome'] == None :
+                await message.channel.send('Le salon d\'annonce à déjà été supprimé')
+            else :
+                await message.channel.send('Salon d\'annonce bien supprimé')
+                server['welcome'] = None
+                openFile(serverFiles,'server','w',server)
+        else :
+            if message.content[19:len(message.content)] == '':
+                if server['welcome'] == message.channel.id :
+                    await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est déjà le salon d\'annonce')
+                else :
+                    server['welcome'] = message.channel.id
+                    await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est maintenant le salon d\'annonce')
+                    openFile(serverFiles,'server','w',server)
+            
+            else :
+                texte = message.content[17:len(message.content)]
+
+                try :
+                    texte = int(message.content[19:37])
+                    if server['welcome'] == texte :
+                        await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est déjà le salon d\'annonce')
+                    else :
+                        server['welcome'] = texte
+                        await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est maintenant le salon d\'annonce')
+                        openFile(serverFiles,'server','w',server)
+                except :
+                    await message.channel.send('Veuillez entrer un salon valide')
+                    await message.channel.send(message.content[19:37])
+
+
+    if commande(config['prefix']) :
+        message.content = message.content[len(config['prefix'])::]
+
+        if commande('ping') : #Permet de recupérer le ping d'un site par exemple
+            message.content = message.content[5::]
+
+            if ping(message.content) :
+                if message.content[0] in '0123456789' :
+                    arguments = 'Le système ' + message.content + ' est bien connecté !'
+                elif message.content == 'localhost' :
+                    arguments = 'Toujours là, toujours debout !'
+                else :
+                    arguments = 'Le système https://' + message.content + ' est bien connecté !'
+            else :
+                arguments = 'Le système ' + message.content + ' est déconnecté...'
+            await message.channel.send(arguments)
+
+        if commande('bye') : #bye les boi
+            if message.author.name == 'drawbu' :
+                await message.channel.send('Je me déco à la demande de **' + message.author.name + '**')
+                await client.close()
+            else :
+                await message.channel.send('Tu n\'as pas la permission')
+
+        if commande('give') : #permet à un drawbu de give de l'argent
+            if message.author.id == 352125871617736704 :
+                texte = message.content[5::]
+                try :
+                    texte = int(texte)
+                except :
+                    await message.channel.send('Ce n\'est pas une valeur correcte')
+                else :
+                    userData['money'] += texte
+                    openFile(usersFiles,str(message.author.id),'w',userData)
+                    await message.channel.send(f'Don de `{texte} d$`') 
+            else :
+                await message.channel.send('Vous n\'avez pas la permission')
+
+        if commande('test') : #test
+            print('test')
+            pass
+
+        if commande('serverInfos') : #infos sur le bot
+            message.content = message.content[12::]
+
+            if message.channel.type is discord.ChannelType.private:
+                await message.channel.send('Désolé, pas en MP')
+
+            else :
+                print(f'"{message.content}"')
+                if commande('memList') :
+                    membres = ''
+                    for i in message.guild.members :
+                        membres += (f'{i.name}\n')
+                    
+                    await message.channel.send(embed=discord.Embed(title=message.guild.name, description=f'**Liste des membres ({message.guild.member_count}) :**\n{membres}').set_thumbnail(url=f'{message.guild.icon_url}'))
+                
+
+                elif commande('user') :
+                    user = ''
+
+                    if message.content == 'user' :
+                        user = client.get_user(message.author.id)
+
+                    else :
+                        try :
+                            user = int(message.content[8:26])
+                            user = client.get_user(user)
+                        except :
+                            await message.channel.send('Je ne connais pas ce joueur')
+                    
+                    if user != '' :
+                        if message.guild.owner.id == user.id :
+                            attribut  = 'Propriétaire'
+                        elif user.bot == True :
+                            attribut  = 'Bot'
+                        else :
+                            attribut = 'Membre'
+
+                        await message.channel.send(embed=discord.Embed(title=f'{user.name} - {attribut}', description=f'**id :** `{user.id}`').set_thumbnail(url=f'{user.avatar_url}'))
+
+                else :
+                    await message.channel.send(embed=discord.Embed(title=message.guild.name, description=f'Le serveur compte aujourd\'hui `{message.guild.member_count} membres`. \nLe propriétaire est `{message.guild.owner.name}`.\n\n**Commandes :**\n`{config["prefix"]}serverInfos memList` : Affiche la liste des membres d\'un serveur.\n`{config["prefix"]}user` : Affiche tes infos sur le serveur.\n`{config["prefix"]}serverInfos user <@membre>` : Affiche les infos d\'un membre du serveur').set_thumbnail(url=f'{message.guild.icon_url}'))
+
+        if commande('classement') :
+            users = os.listdir(usersFiles)
+            usersDict = {}
+            for i in range(len(users)) :
+                usersDict[client.get_user(int(users[i][0:18])).name] = int(openFile(usersFiles, users[i][0:18], 'r', 0)["money"])
+            texte = ''
+            users = 0
+            for r in sorted(usersDict, key=usersDict.get, reverse=True) : 
+                users += 1
+                if users != 11 :
+                    texte += f'**{users} :** *{r}* : `{usersDict[r]} d$`\n'
+                else :
+                    break
+            embed=discord.Embed(title="Classement des fortunes", description=texte, color=0x0088ff)
+            await message.channel.send(embed=embed)
+
+    if commande('!prefix reset') : #Sert à reset le prefix quel qu'il soit
+        config['prefix'] = '!'
+        openFile(mainFiles,'config','w',config)
+        await message.channel.send('Le prefix a bien été changé pour "!"')
+
+    commandes = openFile(mainFiles,'commandes','r',0)
+    for cle,valeur in commandes.items():
+        if commande(cle) :
+            await message.channel.send(valeur)
+
+
+if config['token'] == configJson['token'] :
+    print('\nVeuillez mettre un token valide dans le fichier config.json et relancer le bot\n')
+    print(f'config : {config["token"]} \nconfigJson : {configJson["token"]}')
+else :
+    client.run(token)
