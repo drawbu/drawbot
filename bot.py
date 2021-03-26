@@ -1,23 +1,6 @@
-import discord
-import json
-import random
-import os
-import logging
-import subprocess
-import platform
+import discord, urllib.request, bs4, json, random, os, logging, subprocess, platform, operator
 from art import *
 from datetime import datetime
-import operator
-
-#TODO: 
-# - changer la détéction des mots
-# - ajouter les nouvelles fonctionnalitées :
-#    - l'image a l'arrivée d'un joueur
-#    - steam
-#    - newegg
-#    - amazon?
-# - mettre les commandes dans des fichiers séparés
-
 
 intents = discord.Intents.default()
 intents.members = True
@@ -130,7 +113,6 @@ def mois(mois):
     return mois
 
 openFile(mainFiles,'morpion','w',morpionJson)
-openFile(mainFiles,'commandes','w',{})
 
 #Création/vérifcation du fichier config
 config = verifyFile(mainFiles, 'config', configJson)
@@ -173,14 +155,13 @@ async def on_message(message):
         usersFiles = serverFiles + 'users/'
     
     # variables utiles
-    drawbuMP = client.get_user(352125871617736704)
+    owner = client.get_user(352125871617736704)
 
     # configuation des fichiers morpion.json et config.json par défault
     config_idle = {'startIdleMaxTime': 3,}
     userJson = {'games':0, 'wins': 0, 'money':100, 'daily':0, 'derniereconnexion':str(datetime.now()), 'patates':0, 'mais':0, 'carrotes':0, 'poulailler':0, 'idleMaxTime': 3}
     serverJson = {'welcome':None}
     idleJson = {'afklesstime':3,'afkmaxtime':72,'patates':{'prix':5,'revenus':1,'unlock':0,'max':50},'mais':{'prix':15,'revenus':2,'unlock':200,'max':50},'carrotes':{'prix':40,'revenus':4,'unlock':600,'max':50},'poulailler':{'prix':100,'revenus':8,'unlock':1500,'max':50}}
-
 
 
     #Logs
@@ -191,8 +172,8 @@ async def on_message(message):
         print(f'[{message.guild}] [#{message.channel}] {message.author.name} : {messageLogs}')
 
 
-    # récupération du fichier config
-    config = openFile(mainFiles,'config','r',0)
+    # récupération des fichier config
+    commandes = verifyFile(mainFiles,'commandes',{})
 
     if message.channel.type is not discord.ChannelType.private:
         # création du dossier pour les serveurs
@@ -286,31 +267,6 @@ async def on_message(message):
                 await message.channel.send(arguments)
             lettre += 1
 
-    if message.content.startswith(config['prefix'] + 'ascii'): #tranforme du texte en ascii
-        
-        texte = message.content[len(config['prefix']) + 6 :len(message.content)]
-
-        fontList = ['cybermedium','bubble','block','small','block','white_bubble','random-small','random-medium','random-large','random-xlarge','random','magic']
-        fontNum = 0
-        arguments = 0
-
-        while fontNum != len(fontList) :
-            if texte.startswith(fontList[fontNum]) :
-                texte = texte[len(fontList[fontNum]) + 1:len(texte)]
-                arguments = '```' + text2art(texte, font=fontList[fontNum]) + '```'
-            fontNum += 1
-        if arguments == 0 :
-            arguments = '```' + text2art(texte) + '```'
-
-
-        if len(arguments) <= 2000 :
-            if texte == '' :
-                await message.channel.send('Rajoue du texte après le \'!ascii\' pour que j\'affiche un résultat. \nTu peux aussi écrire avec différentes polices. Pour ce faire, rajoute \'cybermedium\', \'bubble\', \'block\', \'small\', \'block\', \'white_bubble\', \'random\', \'random-small\', \'random-medium\', \'random-large\', \'random-xlarge\' ou \'magic\' après le \'!ascii\'.')
-            else :
-                await message.channel.send(arguments)
-        else :
-            await message.channel.send('Désolé, la phrase est trop grande')
-
     if message.content.startswith(config['prefix'] + 'issou'): #issou
 
         await message.delete() 
@@ -363,29 +319,6 @@ async def on_message(message):
         else :
             await message.channel.send('Pour jouer, mise une somme après le \'!casino\'.Tu commence avec la modique somme de 100 d$ !')
 
-    if message.content.startswith(config['prefix'] + 'score'): #affiche le score d'un joueur
-
-        username = message.content[len(config['prefix']) + 9 :len(message.content) - 1]
-
-        if username == '' :
-            username = '{0.author.id}'.format(message)
-
-            userData = openFile(usersFiles,str(message.author.id),'r',0)
-            score = str(userData['wins']/userData['games']*100)
-            score = score[0:4]
-            arguments = 'Au **chifoumi**, le joueur ' + message.author.name + ' à un score de `' + score + '`% ! Sur `' + str(userData['games']) + '` parties jouées, il en a gagné `' + str(userData['wins']) + '` !\nEt il possède `' + str(userData['money']) + '` d$ !'
-            await message.channel.send(arguments)
-
-        elif (username + ('.json')) in os.listdir(usersFiles) :
-            userData = openFile(usersFiles,username,'r',0)
-    
-            score = str(userData['wins']/userData['games']*100)
-            score = score[0:4]
-            arguments = 'Au **chifoumi**, le joueur ' + message.author.name + ' à un score de `' + score + '`% ! Sur `' + str(userData['games']) + '` parties jouées, il en a gagné `' + str(userData['wins']) + '` !\nEt il possède `' + str(userData['money']) + '` d$ !'
-            await message.channel.send(arguments)
-        else :
-            await message.channel.send('Je ne connais pas ce joueur')
-
     if message.content.startswith(config['prefix'] + 'daily') : #récupère les récompenses journalières
 
         username = '{0.author.id}'.format(message)
@@ -425,18 +358,6 @@ async def on_message(message):
             await message.channel.send(arguments)
 
         openFile(usersFiles,username,'w',userData)
-
-    if message.content.startswith(config['prefix'] + 'bug') : #Sert a prévenir drawbu d'un bug
-
-        if message.channel.type is discord.ChannelType.private:
-            embed = discord.Embed(title ='[MP] | id : `' + str(message.author.id) + '`', description = 'message : `' + message.content[len(config['prefix']) + 4 :len(message.content)] + '`', color = 0xff0000)
-        else :
-            embed = discord.Embed(title ='[{0.guild}] #{0.channel} | id : `'.format(message) + str(message.author.id) + '`', description = 'message : `' + message.content[len(config['prefix']) + 4 :len(message.content)] + '`', color = 0xff0000)
-
-        embed.set_author(name='Bug signalé par ' + message.author.name)
-        await drawbuMP.send(embed = embed)
-
-        await message.channel.send('Message envoyé ! Merci de ton aide ^^')
 
     if message.content.startswith(config['prefix'] + 'morpion') : #Permet de jouer au morpion
 
@@ -569,42 +490,6 @@ async def on_message(message):
             arguments = 'Désolé, une partie est déja en cours avec <@!' + morpion['player'] + '> !'.format(message)
             await message.channel.send(arguments)
 
-    if message.content.startswith(config['prefix'] + 'commande') : #Permet de faire de nouvelles commandes
-        texte = message.content[len(config['prefix'])+9:len(message.content)]
-        lettre = 0
-        commandes = openFile(mainFiles,'commandes','r',0)
-        while texte[lettre] != ' ' :
-            lettre += 1
-            if  lettre == len(texte) :
-                break
-
-        if texte[0:lettre] == 'del' :
-            if texte[lettre + 1:len(texte)] in commandes.keys() :
-                del commandes[texte[lettre + 1:len(texte)]]
-                arguments = 'Commande ' + texte[lettre + 1:len(texte)] + ' enlevée avec succès !'
-                await message.channel.send(arguments)
-            else :
-                await message.channel.send('Désolé, y\'a pas...')
-        elif lettre == len(texte) :
-            await message.channel.send('Désolé, mais il faut un nom et un texte pour la commande')
-        elif len(texte[lettre + 1:len(texte)]) > 200 : 
-            await message.channel.send('Désolé, trop de caractères')
-        else :
-            commandes[texte[0:lettre]] = texte[lettre + 1:len(texte)]
-            arguments = 'Commande ' + texte[lettre + 1:len(texte)] + ' bien ajoutée !'
-            await message.channel.send(arguments)
-
-        openFile(mainFiles,'commandes','w',commandes)
-
-    if message.content.startswith(config['prefix'] + 'prefix') : #Sert a changer le prefix des commandes
-        if message.content[len(config['prefix']) + 7 :len(message.content)] == '' :
-            await message.channel.send('Pour changer le prefix, veuillez le mettre à la suite de la commande.')
-        else :
-            config['prefix'] = message.content[len(config["prefix"]) + 7 :len(message.content)]
-            openFile(mainFiles,'config','w',config)
-            arguments = 'Le prefix à bien été changé pour ' + config['prefix'] + ' !'
-            await message.channel.send(arguments)
-
     if message.content.startswith(config['prefix'] + 'idle') : #permet de jouer au jeu idle
         
         texte = message.content[len(config['prefix']) + 5:len(message.content)]
@@ -713,41 +598,124 @@ async def on_message(message):
             embed.set_footer(text= 'Faites ' + config['prefix'] + 'idle help pour plus d\'infos')
             await message.channel.send(embed=embed)
 
-    if message.content.startswith(config['prefix'] + 'announceChannel') : #dis quel est le salon d'annonce des nouveaux joueurs
-        if message.content[17:len(message.content)] == 'del':
-            if server['welcome'] == None :
-                await message.channel.send('Le salon d\'annonce à déjà été supprimé')
+    if commande(config['prefix']) :
+        message.content = message.content[len(config['prefix'])::]
+
+        for cle,valeur in commandes.items():
+            if commande(cle):
+                await message.channel.send(valeur)
+
+        if commande('commande') : #Permet de faire de nouvelles commandes
+            if message.content == 'commande' :
+                await message.channel.send('Désolé, mais il faut un nom et un texte pour créer une commande.')
+            elif message.content == 'commande del' :
+                await message.channel.send('Désolé, mais il faut indiquer la commande à supprimer.')
+            elif message.content.split()[1] == 'del' :
+                try :
+                    del commandes[message.content.split()[2]]
+                except :
+                    await message.channel.send(f'Désolé, la commande `{config["prefix"]}{message.content.split()[2]}` n\'existe pas...')
+                else :
+                    await message.channel.send(f'Commande `{config["prefix"]}{message.content.split()[2]}` enlevée avec succès !')
+            elif len(message.content) > 300 : 
+                await message.channel.send('Désolé, trop de caractères...')
             else :
-                await message.channel.send('Salon d\'annonce bien supprimé')
-                server['welcome'] = None
-                openFile(serverFiles,'server','w',server)
-        else :
-            if message.content[19:len(message.content)] == '':
+                if message.content.split()[1] not in commandes.keys() :
+                    commandes[message.content.split()[1]] = message.content[len(message.content.split()[0])+len(message.content.split()[1])+2::]
+                    arguments = f'Commande `{config["prefix"]}{message.content.split()[1]}` bien ajoutée !'
+                    await message.channel.send(arguments)
+                else :
+                    await message.channel.send(f'Désolé, la commande `{config["prefix"]}{message.content.split()[1]}` existe déjà...')
+            openFile(mainFiles,'commandes','w',commandes)
+
+        if commande('score'): #affiche le score d'un joueur
+            username = message.content[9:-1]
+
+            if username == '' :
+                userData = openFile(usersFiles,str(message.author.id),'r',0)
+                if userData['games'] == 0 :
+                    await message.channel.send(f'Tu possède `{userData["money"]}` d$ !')
+                else :
+                    await message.channel.send(f'Au **chifoumi**, tu as un score de `{str(userData["wins"]/userData["games"]*100)[0:4]}`% ! Sur `{userData["games"]}` parties jouées, tu en as gagné `{userData["wins"]}` !\nEt tu possèdes `{userData["money"]}` d$ !')
+
+            elif (username + ('.json')) in os.listdir(usersFiles) :
+                userData = openFile(usersFiles,username,'r',0)
+                if userData['games'] == 0 :
+                    await message.channel.send(f'Le joueur possède `{userData["money"]}` d$ !')
+                else :
+                    await message.channel.send(f'Au **chifoumi**, le joueur **{client.get_user(int(username)).name}** à un score de `{str(userData["wins"]/userData["games"]*100)[0:4]}`% ! Sur `{userData["games"]}` parties jouées, il en a gagné `{userData["wins"]}` !\nEt il possède `{userData["money"]}` d$ !')
+            else :
+                await message.channel.send('Je ne connais pas ce joueur')
+
+        if commande('ascii'): #tranforme du texte en ascii
+        
+            texte = message.content[6::]
+
+            fontList = ['cybermedium','bubble','block','small','block','white_bubble','random-small','random-medium','random-large','random-xlarge','random','magic']
+            arguments = 0
+
+            for i in range(len(fontList)) :
+                if texte.startswith(fontList[i]) :
+                    texte = texte[len(fontList[i]) + 1::]
+                    arguments = '```' + text2art(texte, font=fontList[i]) + '```'
+            if arguments == 0 :
+                arguments = '```' + text2art(texte) + '```'
+
+
+            if len(arguments) <= 2000 :
+                if texte == '' :
+                    await message.channel.send('Rajoue du texte après le \'!ascii\' pour que j\'affiche un résultat. \nTu peux aussi écrire avec différentes polices. Pour ce faire, rajoute \'cybermedium\', \'bubble\', \'block\', \'small\', \'block\', \'white_bubble\', \'random\', \'random-small\', \'random-medium\', \'random-large\', \'random-xlarge\' ou \'magic\' après le \'!ascii\'.')
+                else :
+                    await message.channel.send(arguments)
+            else :
+                await message.channel.send('Désolé, la phrase est trop grande')
+        
+        if commande('prefix') : #Sert a changer le prefix des commandes
+            if message.content[7::] == '' :
+                await message.channel.send('Pour changer le prefix, veuillez le mettre à la suite de la commande.')
+            else :
+                config['prefix'] = message.content[7::]
+                openFile(mainFiles,'config','w',config)
+                await message.channel.send(f'Le prefix à bien été changé pour `{config["prefix"]}` !')
+
+        if commande('bug') : #Sert a prévenir l'admin d'un bug
+            if message.channel.type is discord.ChannelType.private:
+                embed = discord.Embed(title =f'[MP] | id : `{message.author.id}`', description = f'message : `{message.content[4::]}`', color = 0xff0000)
+            else :
+                embed = discord.Embed(title =f'[{message.guild}] #{message.channel} | id : `{message.author.id}`', description = f'message : `{message.content[4::]}`', color = 0xff0000)
+
+            embed.set_author(name='Bug signalé par ' + message.author.name)
+            await owner.send(embed = embed)
+
+            await message.channel.send('Message envoyé ! Merci de ton aide ^^')
+
+        if commande('announceChannel') : #dis quel est le salon de bienvenue des nouveaux membres
+            if message.content == (message.content).split()[0] :
                 if server['welcome'] == message.channel.id :
-                    await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est déjà le salon d\'annonce')
+                    await message.channel.send(f'Le salon <#{client.get_channel(server["welcome"]).id}> est déjà le salon d\'annonce')
                 else :
                     server['welcome'] = message.channel.id
-                    await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est maintenant le salon d\'annonce')
+                    await message.channel.send(f'Le salon <#{client.get_channel(server["welcome"]).id}> est maintenant le salon d\'annonce')
                     openFile(serverFiles,'server','w',server)
-            
-            else :
-                texte = message.content[17:len(message.content)]
 
+            elif (message.content).split()[1] == 'del':
+                if server['welcome'] == None :
+                    await message.channel.send('Le salon d\'annonce à déjà été supprimé')
+                else :
+                    await message.channel.send('Salon d\'annonce bien supprimé')
+                    server['welcome'] = None
+                    openFile(serverFiles,'server','w',server)
+
+            else :
                 try :
-                    texte = int(message.content[19:37])
-                    if server['welcome'] == texte :
-                        await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est déjà le salon d\'annonce')
+                    if server['welcome'] == ((message.content).split()[1])[2:-1] :
+                        await message.channel.send(f'Le salon <#{client.get_channel(server["welcome"]).id}> est déjà le salon d\'annonce')
                     else :
-                        server['welcome'] = texte
-                        await message.channel.send('Le salon <#' + str(client.get_channel(server['welcome']).id) + '> est maintenant le salon d\'annonce')
+                        server['welcome'] = int(((message.content).split()[1])[2:-1])
+                        await message.channel.send(f'Le salon <#{client.get_channel(server["welcome"]).id}> est maintenant le salon d\'annonce')
                         openFile(serverFiles,'server','w',server)
                 except :
                     await message.channel.send('Veuillez entrer un salon valide')
-                    await message.channel.send(message.content[19:37])
-
-
-    if commande(config['prefix']) :
-        message.content = message.content[len(config['prefix'])::]
 
         if commande('ping') : #Permet de recupérer le ping d'un site par exemple
             message.content = message.content[5::]
@@ -764,14 +732,14 @@ async def on_message(message):
             await message.channel.send(arguments)
 
         if commande('bye') : #bye les boi
-            if message.author.name == 'drawbu' :
-                await message.channel.send('Je me déco à la demande de **' + message.author.name + '**')
+            if message.author.id == owner.id :
+                await message.channel.send(f'Je me déco à la demande de **{message.author.name}**')
                 await client.close()
             else :
                 await message.channel.send('Tu n\'as pas la permission')
 
         if commande('give') : #permet à un drawbu de give de l'argent
-            if message.author.id == 352125871617736704 :
+            if message.author.id == owner.id :
                 texte = message.content[5::]
                 try :
                     texte = int(texte)
@@ -846,16 +814,21 @@ async def on_message(message):
             embed=discord.Embed(title="Classement des fortunes", description=texte, color=0x0088ff)
             await message.channel.send(embed=embed)
 
+        if commande('cat') :
+            if commande('cat help') :
+                embed=discord.Embed(description=f'Image générée par le site https://thiscatdoesnotexist.com.\nFaites `{config["prefix"]}cat` pour affiche une image d\'un chat **qui n\'existe pas** et qui est generé grace à une Intelligence Artificielle.', color=0x009dff)
+                embed.set_author(name=f'Aide pour la commande {config["prefix"]}cat :', icon_url='https://thiscatdoesnotexist.com/')
+                await message.channel.send(embed=embed)
+            else :
+                await message.channel.send('Veuillez patienter, c\'est en cours !', delete_after=3.0)
+                urllib.request.urlretrieve('https://thiscatdoesnotexist.com/','cat.png')
+                with open('cat.png', 'rb') as picture: 
+                    await message.channel.send(file=discord.File(picture))
+
     if commande('!prefix reset') : #Sert à reset le prefix quel qu'il soit
         config['prefix'] = '!'
         openFile(mainFiles,'config','w',config)
         await message.channel.send('Le prefix a bien été changé pour "!"')
-
-    commandes = openFile(mainFiles,'commandes','r',0)
-    for cle,valeur in commandes.items():
-        if commande(cle) :
-            await message.channel.send(valeur)
-
 
 if config['token'] == configJson['token'] :
     print('\nVeuillez mettre un token valide dans le fichier config.json et relancer le bot\n')
