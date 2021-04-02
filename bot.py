@@ -1,4 +1,4 @@
-import discord, urllib.request, bs4, json, random, os, logging, subprocess, platform, operator
+import discord, urllib.request, bs4, json, random, os, logging, subprocess, platform, operator, time
 from art import *
 from datetime import datetime
 
@@ -167,9 +167,9 @@ async def on_message(message):
     #Logs
     messageLogs = message.content.replace('\n', ' ')
     if message.channel.type is discord.ChannelType.private:
-        print(f'[{message.channel}] : {messageLogs}')
+        print(f'[{(message.created_at.isoformat(sep="T", timespec="seconds")).replace("T"," ")}] [{message.created_at}] [{message.channel}] : {messageLogs}')
     else :
-        print(f'[{message.guild}] [#{message.channel}] {message.author.name} : {messageLogs}')
+        print(f'[{(message.created_at.isoformat(sep="T", timespec="seconds")).replace("T"," ")}] [{message.guild}] [#{message.channel}] {message.author.name} : {messageLogs}')
 
 
     # récupération des fichier config
@@ -253,24 +253,6 @@ async def on_message(message):
         arguments = 'Message invoqué par {0.author}'.format(message)
         embed.add_field(name=arguments, value= 'Pour apprendre comment utiliser les commandes, il suffit de taper la commande', inline=False)
         await message.channel.send(embed=embed)
-
-    if message.content.startswith(config['prefix'] + 'counter'): #compte le nombre de caractères du message
-        
-        alphabet="abcdefghijklmnopqrstuvwxyz0123456789éèêëàâäôöîïùûüç!\"#$%&'()*+,-./0123456789:;<=>?@[]^_`{|}~"
-        texte = message.content[len(config['prefix']) + 7 :len(message.content)]
-        lettre = int(0)
-        arguments = ''
-
-        while lettre != (len(alphabet)) :
-            if alphabet[lettre] in texte :
-                arguments = str(alphabet[lettre]) + ' est présent ' + str(texte.count(alphabet[lettre])) + ' fois !'
-                await message.channel.send(arguments)
-            lettre += 1
-
-    if message.content.startswith(config['prefix'] + 'issou'): #issou
-
-        await message.delete() 
-        await message.channel.send('https://tenor.com/view/risitas-main-dent-issou-laugh-gif-9505807')
 
     if message.content.startswith(config['prefix'] + 'casino'): #permet de jouer au casino
 
@@ -605,6 +587,18 @@ async def on_message(message):
             if commande(cle):
                 await message.channel.send(valeur)
 
+        if commande('counter'): #compte le nombre de caractères du message
+            alphabet="abcdefghijklmnopqrstuvwxyz0123456789éèêëàâäôöîïùûüç!\"#$%&'()*+,-./0123456789:;<=>?@[]^_`{|}~"
+            texte = ''
+            for i in range(len(alphabet)):
+                if alphabet[i] in message.content[8::] :
+                    texte += f'**{alphabet[i]}** est présent `{message.content[7::].count(alphabet[i])} fois` !\n'
+            await message.channel.send(embed=discord.Embed(title=f'"{message.content[8::]}"', description=texte, color = 0x0088ff).set_author(name="Liste des caractères dans :"))
+
+        if commande('issou'): #issou
+            await message.delete() 
+            await message.channel.send('https://tenor.com/view/risitas-main-dent-issou-laugh-gif-9505807')
+
         if commande('commande') : #Permet de faire de nouvelles commandes
             if message.content == 'commande' :
                 await message.channel.send('Désolé, mais il faut un nom et un texte pour créer une commande.')
@@ -720,16 +714,15 @@ async def on_message(message):
         if commande('ping') : #Permet de recupérer le ping d'un site par exemple
             message.content = message.content[5::]
 
-            if ping(message.content) :
+            if message.content == '' or  message.content == 'localhost' or  message.content ==  '127.0.0.1' or  message.content == '0.0.0.0':
+                await message.channel.send(f'Ma latence est actuellement de {round(client.latency*1000)}ms !')
+            elif ping(message.content) :
                 if message.content[0] in '0123456789' :
-                    arguments = 'Le système ' + message.content + ' est bien connecté !'
-                elif message.content == 'localhost' :
-                    arguments = 'Toujours là, toujours debout !'
+                    message.channel.send(f'Le système {message.content} est bien connecté !')
                 else :
-                    arguments = 'Le système https://' + message.content + ' est bien connecté !'
+                    message.channel.send(f'Le système https://{message.content} est bien connecté !')
             else :
-                arguments = 'Le système ' + message.content + ' est déconnecté...'
-            await message.channel.send(arguments)
+                await message.channel.send(f'Le système {message.content} est déconnecté...')
 
         if commande('bye') : #bye les boi
             if message.author.id == owner.id :
@@ -751,10 +744,6 @@ async def on_message(message):
                     await message.channel.send(f'Don de `{texte} d$`') 
             else :
                 await message.channel.send('Vous n\'avez pas la permission')
-
-        if commande('test') : #test
-            print('test')
-            pass
 
         if commande('serverInfos') : #infos sur le bot
             message.content = message.content[12::]
@@ -798,7 +787,7 @@ async def on_message(message):
                 else :
                     await message.channel.send(embed=discord.Embed(title=message.guild.name, description=f'Le serveur compte aujourd\'hui `{message.guild.member_count} membres`. \nLe propriétaire est `{message.guild.owner.name}`.\n\n**Commandes :**\n`{config["prefix"]}serverInfos memList` : Affiche la liste des membres d\'un serveur.\n`{config["prefix"]}user` : Affiche tes infos sur le serveur.\n`{config["prefix"]}serverInfos user <@membre>` : Affiche les infos d\'un membre du serveur').set_thumbnail(url=f'{message.guild.icon_url}'))
 
-        if commande('classement') :
+        if commande('classement') : #classement des joueurs
             users = os.listdir(usersFiles)
             usersDict = {}
             for i in range(len(users)) :
@@ -814,7 +803,7 @@ async def on_message(message):
             embed=discord.Embed(title="Classement des fortunes", description=texte, color=0x0088ff)
             await message.channel.send(embed=embed)
 
-        if commande('cat') :
+        if commande('cat') : #affiche une image de chat aléatoire
             if commande('cat help') :
                 embed=discord.Embed(description=f'Image générée par le site https://thiscatdoesnotexist.com.\nFaites `{config["prefix"]}cat` pour affiche une image d\'un chat **qui n\'existe pas** et qui est generé grace à une Intelligence Artificielle.', color=0x009dff)
                 embed.set_author(name=f'Aide pour la commande {config["prefix"]}cat :', icon_url='https://thiscatdoesnotexist.com/')
@@ -824,6 +813,9 @@ async def on_message(message):
                 urllib.request.urlretrieve('https://thiscatdoesnotexist.com/','cat.png')
                 with open('cat.png', 'rb') as picture: 
                     await message.channel.send(file=discord.File(picture))
+
+        if commande('test') : #test 
+            await client.change_presence(activity=discord.Activity(name='issou'))
 
     if commande('!prefix reset') : #Sert à reset le prefix quel qu'il soit
         config['prefix'] = '!'
