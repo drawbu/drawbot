@@ -20,7 +20,7 @@ def openFile(repertory,file,action,fileData = None) :
         if action == 'r' :
             fileData = json.load(jsonFile)
         elif action == 'w' :
-            json.dump(fileData, jsonFile)
+            json.dump(fileData, jsonFile, indent=4)
         jsonFile.close()
         return fileData
 
@@ -29,10 +29,11 @@ def verifyFile(repertory,file,fileJson) :
     if (file + '.json') not in os.listdir(repertory) :
         openFile(repertory, file, 'w', fileJson)
     fileData = openFile(repertory, file, 'r', 0)
-    for cle,valeur in fileJson.items():
-        if cle not in fileData.keys() :
-            fileData[cle] = fileJson[cle]
-    openFile(repertory, file, 'w', fileData)
+    if type({}) == type(fileJson) :
+        for cle,valeur in fileJson.items():
+            if cle not in fileData.keys() :
+                fileData[cle] = fileJson[cle]
+        openFile(repertory, file, 'w', fileData)
     return fileData
 
 def createDir(repertory):
@@ -818,21 +819,21 @@ async def devoirs_pronote():
 
             if (pronote.logged_in and (configPronote['channelID'] != None)):
                 devoirs = pronote.homework(pronote.start_day, pronote.start_day + pronotepy.datetime.timedelta(days=360))
-                devoirsFile = verifyFile(filesDir, 'devoirs', {})
+                devoirsFile = verifyFile(filesDir, 'devoirs', [])
                 devoirsList = []
                 for i in devoirs :
                     description = i.description.replace('\n', ' ')
                     devoirsList.append(f'{i.date} : {i.subject.name} {description}')
 
                 if len(devoirsList) > len(devoirsFile) :
+                    openFile(filesDir, 'devoirs', 'w', devoirsList)
                     devoirsNewNbr = len(devoirsList) - len(devoirsFile)
-                    print(f'{devoirsNewNbr} nouveaux devoirs !')
-                    pronoteChannel = client.get_channel(configPronote['channelID'])
+                    print(f'[PRONOTE] {devoirsNewNbr} nouveaux devoirs !')
+                    pronoteChannel = client.get_channel(int(configPronote['channelID']))
                     for i in range(devoirsNewNbr) :
                         embed=discord.Embed(title=devoirs[len(devoirsFile)+i].subject.name, description=devoirs[len(devoirsFile)+i].description.replace('\n', ' '), color=0x1E744F)
                         embed.set_author(name=f'Pour le {devoirs[len(devoirsFile)+i].date}')
                         await pronoteChannel.send(embed=embed)
-                    openFile('./', 'devoirs', 'w', devoirsList)
 
 if token != None :
     client.run(token)
