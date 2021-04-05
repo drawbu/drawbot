@@ -1,7 +1,7 @@
 import discord, urllib.request, bs4, json, random, os, logging, subprocess, platform, operator, time, pronotepy
 from discord.ext import commands, tasks
 from art import *
-from datetime import datetime
+from datetime import datetime, timedelta
 
 intents = discord.Intents.default()
 intents.members = True
@@ -86,32 +86,6 @@ def ping(host):
 
     # Ping
     return subprocess.call(args, shell=need_sh) == 0
-
-def mois(mois):
-    mois = 0
-    if mois == 2 :
-        mois = 31
-    elif mois == 3 :
-        mois = 59
-    elif mois == 4 :
-        mois = 90
-    elif mois == 5 :
-        mois = 120
-    elif mois == 6 :
-        mois = 151
-    elif mois == 7 :
-        mois = 181
-    elif mois == 8 :
-        mois = 212
-    elif mois == 9 :
-        mois = 243
-    elif mois == 10 :
-        mois = 273
-    elif mois == 11 :
-        mois = 304
-    elif mois == 12 :
-        mois = 334
-    return mois
 
 openFile(mainFiles,'morpion','w',morpionJson)
 
@@ -561,15 +535,18 @@ async def on_message(message):
                     arguments += '\n- :no_entry_sign: **Bloqué** - débloquage : **' + str(idleJson[item]['unlock']) + ' d$**'
 
             derniereconnexion = userData['derniereconnexion']
-            derniereconnexion = datetime(int(derniereconnexion[0:4]), int(derniereconnexion[5:7]), int(derniereconnexion[8:10]), int(derniereconnexion[11:13]), 0, 0)
-            derniereconnexion = ((derniereconnexion.year-1)*365 + mois(derniereconnexion.month) + (derniereconnexion.day-1))*24 + derniereconnexion.hour
             mtn = datetime.now()
-            mtn = ((mtn.year-1)*365 + mois(mtn.month) + (mtn.day-1))*24 + mtn.hour
-            absence = mtn-derniereconnexion
+            absence = 0
+
+            while derniereconnexion[0:13] != str(mtn)[0:13] :
+                mtn -= timedelta(hours=1)
+                absence += 1
+            absenceBase = absence
+
             if str(absence) != '0' :
                 if absence > userData['idleMaxTime']:
                     absence = userData['idleMaxTime']
-                    await message.channel.send(f'Vous avez été absent pendant `{mtn-derniereconnexion}h` ! Malheuresement, vous ne pouvez récupérer que les revenus des `{userData["idleMaxTime"]} dernières heures`.\nVous avez donc gagné `{revenus*absence} d$`')
+                    await message.channel.send(f'Vous avez été absent pendant `{absenceBase}h` ! Malheuresement, vous ne pouvez récupérer que les revenus des `{userData["idleMaxTime"]} dernières heures`.\nVous avez donc gagné `{revenus*absence} d$`')
                 else :
                     await message.channel.send(f'Vous avez été absent pendant `{absence}h` !\nVous avez donc gagné `{revenus*absence} d$`')
                 userData['money'] += revenus*absence
@@ -824,12 +801,14 @@ async def on_message(message):
         openFile(mainFiles,'config','w',config)
         await message.channel.send('Le prefix a bien été changé pour "!"')
 
+
 @tasks.loop(seconds=300)
 async def devoirs_pronote():
 
     if datetime.now().hour not in [22,23,0,1,2,3,4,5] :
         filesDir = './'
         configPronote = verifyFile(filesDir, 'pronote', {'username':None,'password':None,'folderName': None, 'channelID': None, 'url': None})
+        
         if configPronote['username'] != None and configPronote['password'] != None and configPronote['url'] != None:
             pronote = pronotepy.Client(configPronote['url'], username=configPronote['username'], password=configPronote['password'])
             
@@ -855,4 +834,7 @@ async def devoirs_pronote():
                         await pronoteChannel.send(embed=embed)
                     openFile('./', 'devoirs', 'w', devoirsList)
 
-client.run(token)
+if token != None :
+    client.run(token)
+else :
+    print('Pas de token dans le fichier config')
