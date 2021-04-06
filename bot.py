@@ -45,34 +45,14 @@ def createDir(repertory):
 
 # Fonctions secondaires (pour des utilisations précises)
 def affichageMorpion(plateau) :
-    curseur = 1
+    print(f'"{plateau}"')
     affichage = ''
-    while curseur != 10 :
-        if plateau[curseur] == 'O' :
-            affichage += ':o:'
-        elif plateau[curseur] == 'X' :
-            affichage += ':x:'
-        elif plateau[curseur] == '1' :
-            affichage += ':one:'
-        elif plateau[curseur] == '2' :
-            affichage += ':two:'
-        elif plateau[curseur] == '3' :
-            affichage += ':three:'
-        elif plateau[curseur] == '4' :
-            affichage += ':four:'
-        elif plateau[curseur] == '5' :
-            affichage += ':five:'
-        elif plateau[curseur] == '6' :
-            affichage += ':six:'
-        elif plateau[curseur] == '7' :
-            affichage += ':seven:'
-        elif plateau[curseur] == '8' :
-            affichage += ':eight:'
-        elif plateau[curseur] == '9' :
-            affichage += ':nine:'
-        if curseur == 3 or curseur == 6:
+    correspondance = {'O':':o:', 'X':':x:', '1':':one:', '2':':two:', '3':':three:', '4':':four:', '5':':five:', '6':':six:', '7':':seven:', '8':':eight:', '9':':nine:'}
+    for i in range(1,10) :
+        if plateau[i] in correspondance.keys() :
+            affichage += correspondance[plateau[i]]
+        if i == 3 or i == 6:
             affichage += '\n'
-        curseur += 1
     return affichage
 
 def ping(host):
