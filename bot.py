@@ -13,7 +13,8 @@ mainFiles = './'
 morpionJson = {'player': '', 'tours': 0, 'joueur': 'O', 'entree': 0, 'victoire': False, 'plateau': ' 123456789', 'bot': '', 'dernier': ''}
 configJson = {'token': '0', 'prefix': ';'}
 
-# Fonctions principales (fonctions très utiles)
+# Fonction
+#  principales (fonctions très utiles)
 def openFile(repertory,file,action,fileData = None) :
     """Permet de créer ou ouvrir des fichier json. Dans action il faut mettre 'r' pour lire et 'w' pour remplacer le contenu du fichier par fileData. Si le fichier n'existe pas, il faut faire 'w'."""
     with open(repertory + file + '.json',action) as jsonFile:
@@ -129,9 +130,8 @@ async def on_message(message):
         print(f'[{(message.created_at.isoformat(sep="T", timespec="seconds")).replace("T"," ")}] [{message.guild}] [#{message.channel}] {message.author.name} : {messageLogs}')
 
 
-    # récupération des fichier config
+    # récupération des fichiers
     commandes = verifyFile(mainFiles,'commandes',{})
-
     if message.channel.type is not discord.ChannelType.private:
         # création du dossier pour les serveurs
         createDir(serversBaseFiles)
@@ -774,8 +774,16 @@ async def on_message(message):
                 with open('cat.png', 'rb') as picture: 
                     await message.channel.send(file=discord.File(picture))
 
-        if commande('test') : #test 
-            await client.change_presence(activity=discord.Activity(name='issou'))
+        if commande('new_channel'):
+            if message.author.guild_permissions.manage_channels:
+                cache = message.content[12::].replace(' ', '-')
+                if cache == '':
+                    cache = 'Nouveau salon'
+                await message.guild.create_text_channel(cache)
+                await message.channel.send(f'Salon **"#{cache}"** créé avec succès !')
+            else:
+                await message.channel.send(f'Malheuresement, vous n\'avez pas les autorisations necessaires pour effectuer cette action, veuillez contacter un membre avec plus de permissions et réessayez.')
+
 
     if commande('!prefix reset') : #Sert à reset le prefix quel qu'il soit
         config['prefix'] = '!'
