@@ -844,9 +844,20 @@ async def on_message(message):
                             except:
                                 await message.channel.send(f'Désolé, nous n\'avons pas pu ajouter le serveur **{message.content.split()[2]}** (`{message.content.split()[3]}`), car nous n\'avons pas reçu de réponses. Soit le serveur est hors ligne, soit il y a eu une erreur. Veuillez réessayer plus tard.')
                             else:
-                                server['mc_serv'].append({'name':message.content.split()[2],'ip':message.content.split()[3]})
-                                openFile(serverFiles, 'server','w',server)
-                                await message.channel.send(f'Le serveur **{message.content.split()[2]}** (`{message.content.split()[3]}`) à bien été ajouté à la liste !')
+                                issue = False
+                                for i in range(len(server['mc_serv'])):
+                                    if server['mc_serv'][i]['ip'] == message.content.split()[2]:
+                                        issue = 'name'
+                                        break
+                                    if server['mc_serv'][i]['ip'] == message.content.split()[3]:
+                                        issue = 'ip'
+                                        break
+                                if not issue:
+                                    server['mc_serv'].append({'name':message.content.split()[2],'ip':message.content.split()[3]})
+                                    openFile(serverFiles, 'server','w',server)
+                                    await message.channel.send(f'Le serveur **{message.content.split()[2]}** (`{message.content.split()[3]}`) à bien été ajouté à la liste !')
+                                else:
+                                    await message.channel.send(f'Désolé, un serveur avec le même {issue} existe déjà.')
                         else:
                             await message.channel.send(f'Pour ajouter un serveur, veuillez donner le nom et l\'ip du serveur.\n**Exemple :** `{config["prefix"]}mc_serv add Hypixel hypixel.net`')
                     elif message.content.split()[1] == 'delete':
