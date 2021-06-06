@@ -1,4 +1,4 @@
-import discord, urllib.request, bs4, json, random, os, logging, subprocess, platform, operator, time, pronotepy
+import discord, urllib.request, bs4, json, random, os, logging, subprocess, platform, operator, time, pronotepy, mcstatus, base64
 from discord.ext import commands, tasks
 from art import *
 from datetime import datetime, timedelta
@@ -118,11 +118,10 @@ async def on_message(message):
     # configuation des fichiers morpion.json et config.json par défault
     config_idle = {'startIdleMaxTime': 3,}
     userJson = {'games':0, 'wins': 0, 'money':100, 'daily':0, 'derniereconnexion':str(datetime.now()), 'patates':0, 'mais':0, 'carrotes':0, 'poulailler':0, 'idleMaxTime': 3}
-    serverJson = {'welcome':None}
     idleJson = {'afklesstime':3,'afkmaxtime':72,'patates':{'prix':5,'revenus':1,'unlock':0,'max':50},'mais':{'prix':15,'revenus':2,'unlock':200,'max':50},'carrotes':{'prix':40,'revenus':4,'unlock':600,'max':50},'poulailler':{'prix':100,'revenus':8,'unlock':1500,'max':50}}
 
 
-    #Logs
+    # logs
     messageLogs = message.content.replace('\n', ' ')
     if message.channel.type is discord.ChannelType.private:
         print(f'[{(message.created_at.isoformat(sep="T", timespec="seconds")).replace("T"," ")}] [{message.created_at}] [{message.channel}] : {messageLogs}')
@@ -138,11 +137,15 @@ async def on_message(message):
 
         # création/vérification du dossier et du fichier serveur
         createDir(serverFiles)
-        server = verifyFile(serverFiles, 'server', serverJson)
+        server = verifyFile(serverFiles, 'server', {'welcome':None,'mc_serv':[]})
 
         # création/vérification du dossier et du fichier utilisateur
         createDir(usersFiles)
         userData = verifyFile(usersFiles,str(message.author.id),userJson)
+
+        # création du fichier minecraft servers
+        if 'servers_minecraft.json' not in os.listdir('./'):
+            openFile(mainFiles,'servers_minecraft','w',[])
 
 
     if message.content.startswith(config['prefix'] + 'pierrefeuilleciseaux') or message.content.startswith(config['prefix'] + 'chifoumi'): #partie de pierre feuille ciseaux contre le bot
@@ -783,6 +786,98 @@ async def on_message(message):
                 await message.channel.send(f'Salon **"#{cache}"** créé avec succès !')
             else:
                 await message.channel.send(f'Malheuresement, vous n\'avez pas les autorisations necessaires pour effectuer cette action, veuillez contacter un membre avec plus de permissions et réessayez.')
+
+        if commande('mc_serv'):
+            if message.channel.type is not discord.ChannelType.private:
+                if len(message.content.split()) >= 2:
+                    if message.content.split()[1] == 'show':
+                        serversList = server['mc_serv']
+                        if len(serversList) != 0:
+                            for server in range(len(serversList)):
+                                status = mcstatus.MinecraftServer.lookup(serversList[server]['ip'])
+                                try:
+                                    status = status.status()
+                                except:
+                                    await message.channel.send(embed=discord.Embed(description='Pas de réponses').set_author(name=serversList[server]['name'].set_footer(text=serversList[server]['ip'])))
+                                else:
+                                    cache = {}
+                                    try:
+                                        cache['version'] = status.version.name
+                                    except: 
+                                        cache['version'] = 'Erreur'
+
+                                    try:
+                                        cache['players'] = f'{status.players.online}/{status.players.max}'
+                                    except: 
+                                        cache['players'] = 'Erreur'
+                                    
+                                    try:
+                                        cache['players_list'] = ''
+                                        if status.players.online != 0:
+                                            cache['players_list'] = '\n'
+                                            for player in status.players.sample:
+                                                cache['players_list'] += f'{player.name}, '
+                                    except: 
+                                        cache['players_list'] = 'Erreur'
+
+                                    try:
+                                        cache['ping'] = round(status.latency)
+                                    except: 
+                                        cache['ping'] = 'Erreur'
+                                    
+                                    try:
+                                        cache['description'] = f'{status.description["text"].replace("§","&")}\n\n'
+                                    except: 
+                                        cache['description'] = ''
+                                    
+                                    with open('server.png', 'wb') as picture:
+                                        picture.write(base64.b64decode(status.favicon[22::]))
+                                    with open('server.png', 'rb') as picture:
+                                        await message.channel.send(embed=discord.Embed(title=cache['version'], description=f'{cache["description"]}{cache["players"]} joueurs connectés.{cache["players_list"][0:-2]}').set_author(name=serversList[server]['name'], icon_url='attachment://server.png').set_footer(text=serversList[server]['ip']), file=discord.File("server.png"))
+                        else:
+                            await message.channel.send('Désolé, pas de serveurs enregistrés pour le moment...')
+                    elif message.content.split()[1] == 'add':
+                        if len(message.content.split()) >= 4:
+                            status = mcstatus.MinecraftServer.lookup(message.content.split()[3])
+                            try:
+                                status = status.status()
+                            except:
+                                await message.channel.send(f'Désolé, nous n\'avons pas pu ajouter le serveur **{message.content.split()[2]}** (`{message.content.split()[3]}`), car nous n\'avons pas reçu de réponses. Soit le serveur est hors ligne, soit il y a eu une erreur. Veuillez réessayer plus tard.')
+                            else:
+                                issue = False
+                                for i in range(len(server['mc_serv'])):
+                                    if server['mc_serv'][i]['ip'] == message.content.split()[2]:
+                                        issue = 'name'
+                                        break
+                                    if server['mc_serv'][i]['ip'] == message.content.split()[3]:
+                                        issue = 'ip'
+                                        break
+                                if not issue:
+                                    server['mc_serv'].append({'name':message.content.split()[2],'ip':message.content.split()[3]})
+                                    openFile(serverFiles, 'server','w',server)
+                                    await message.channel.send(f'Le serveur **{message.content.split()[2]}** (`{message.content.split()[3]}`) à bien été ajouté à la liste !')
+                                else:
+                                    await message.channel.send(f'Désolé, un serveur avec le même {issue} existe déjà.')
+                        else:
+                            await message.channel.send(f'Pour ajouter un serveur, veuillez donner le nom et l\'ip du serveur.\n**Exemple :** `{config["prefix"]}mc_serv add Hypixel hypixel.net`')
+                    elif message.content.split()[1] == 'delete':
+                        if len(message.content.split()) >= 3:
+                            cache = False
+                            for i in range(len(server['mc_serv'])):
+                                if server['mc_serv'][i]['name'] == message.content.split()[2]:
+                                    cache = True
+                            if cache:
+                                await message.channel.send(f'Le serveur **{server["mc_serv"][i]["name"]}** (`{server["mc_serv"][i]["ip"]}`) à bien été supprimé.')
+                                server['mc_serv'].pop(i)
+                                openFile(serverFiles, 'server','w',server)
+                            else:
+                                await message.channel.send(f'Le serveur **{message.content.split()[2]}** n\'est pas présent dans la liste des serveurs.')
+                    elif message.content.split()[1] == 'help':
+                        await message.channel.send(embed = discord.Embed(title=f'Aide pour la commande `{config["prefix"]}mc_serv`', description=f'La commande `{config["prefix"]}mc_serv` est une commande permettant de vérifier l\'état d\'un serveur Minecraft.\nTous les serveurs ajoutés sont accessible uniquement sur ce serveur. La liste vous est propre.\n\n**{config["prefix"]}mc_serv show :** affiche l\'état des serveurs enregistrés\n**{config["prefix"]}mc_serv add `name` `ip` :** ajoute le serveur demandé à la liste\n**{config["prefix"]}mc_serv delete `name` :** supprime le serveur demandé de la liste').set_footer(text=f'"{config["prefix"]}mc_serv help" pour afficher cet écran'))
+                    else:
+                        await message.channel.send(f'Erreur, faites `{config["prefix"]}mc_serv help` pour plus d\'infos !')
+                else:
+                    await message.channel.send(f'Erreur, faites `{config["prefix"]}mc_serv help` pour plus d\'infos !')
 
 
     if commande('!prefix reset') : #Sert à reset le prefix quel qu'il soit
