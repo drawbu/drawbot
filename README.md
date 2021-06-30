@@ -23,7 +23,7 @@ On first start, the bot will create **3** json files :
 
 This file stocks your bot's **token** and **prefix** like this:
 
-```json
+```json5
 {
     "token": "( ͡° ͜ʖ ͡°)", // bot token
     "prefix": "!" // bot prefix
@@ -38,10 +38,10 @@ It's the only file that you need to change to run the bot by your own.
 
 You pronote credentials.
 
-```json
+```json5
 {
     "username": null,  // Pronote username
-    "password": null,  // Ponote password
+    "password": null,  // Pronote password
     "channelID": null, // Channel to send homeworks
     "url": null // School pronote url
 }
