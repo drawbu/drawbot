@@ -15,14 +15,13 @@ A Pronote notifier discord bot.
 :---: | :---
 :warning: | at the first launch, it might send a lot of messages
 
-
 ## files documentation
 
 On first start, the bot will create **3** json files :
 
-- config.json
-- devoirs.json
-- pronote.json
+ - config.json
+ - devoirs.json
+ - pronote.json
 
 ### config.json
 
