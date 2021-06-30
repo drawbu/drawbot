@@ -20,6 +20,8 @@ class Bot(commands.Bot):
         super().__init__(config.get('prefix', ';'))
         self._token = config.get('token')
 
+        self.remove_command('help')
+
         for filename in os.listdir("app/cogs"):
             if filename.endswith('.py'):
                 self.load_extension(f'app.cogs.{filename[:-3]}')
