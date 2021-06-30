@@ -2,7 +2,7 @@
 
 ## Development Lead
 
--   [drawbu](https://https://github.com/drawbu "drawbu")
+-   [drawbu](https://github.com/drawbu "drawbu")
 
 ## Contributors
 
