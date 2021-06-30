@@ -17,6 +17,9 @@ class Bot(commands.Bot):
 
         super().run(self._token)
 
+    async def on_ready(self):
+        print(f'Connecté en temps que {self.user.name} !')
+
 
 def main():
     bot = Bot()
