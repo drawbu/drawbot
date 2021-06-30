@@ -13,6 +13,7 @@ A Pronote notifier discord bot.
 
 :bangbang: | don't try with a wrong username or password too many time, or you can get banned from Pronote
 :---: | :---
+:warning: | at the first launch, it might send a lot of messages
 
 
 ## files documentation
