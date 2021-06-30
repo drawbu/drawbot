@@ -6,6 +6,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/drawbu/drawbot)
 ![Lines of code](https://img.shields.io/tokei/lines/github/drawbu/drawbot)
 ![GitHub last commit](https://img.shields.io/github/last-commit/drawbu/drawbot)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/drawbu/drawbot)
 
 This is my discord's bot. If you things about an upgrade in **efficiency**, or if you see an **issue**, please tell me. Thanks a lot!
 
