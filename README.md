@@ -19,9 +19,9 @@ A Pronote notifier discord bot.
 
 On first start, the bot will create **3** json files :
 
- - config.json
- - devoirs.json
- - pronote.json
+-   config.json
+-   devoirs.json
+-   pronote.json
 
 ### config.json
 
