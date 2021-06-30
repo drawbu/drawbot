@@ -20,7 +20,7 @@ class Pronote(commands.Cog):
         if datetime.now().hour in [22, 23, 0, 1, 2, 3, 4, 5]:
             return
 
-        files_dir = ''
+        files_dir = 'app/'
         config_pronote = open_file(files_dir, 'pronote', 'r')
 
         if config_pronote.get('username') is None:
