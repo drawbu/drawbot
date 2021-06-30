@@ -11,6 +11,10 @@
 
 A Pronote notifier discord bot.
 
+:bangbang: | don't try with a wrong username or password too many time, or you can get banned from Pronote
+:---: | :---
+
+
 ## files documentation
 
 On first start, the bot will create **3** json files :

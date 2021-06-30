@@ -21,15 +21,27 @@ class Pronote(commands.Cog):
             return
 
         files_dir = 'app/'
+
+        if not os.path.isfile('app/pronote.json'):
+            open_file(files_dir, 'pronote', 'w', {
+                "username": None,
+                "password": None,
+                "channelID": None,
+                "url": None
+            }
+                      )
         config_pronote = open_file(files_dir, 'pronote', 'r')
 
         if config_pronote.get('username') is None:
+            print('veuillez indiquer un nom d\'utilisateur Pronote dans le fichier pronote.json')
             return
 
         if config_pronote.get('password') is None:
+            print('veuillez indiquer un nom d\'utilisateur Pronote dans le fichier pronote.json')
             return
 
         if config_pronote.get('url') is None:
+            print('veuillez indiquer un nom d\'utilisateur Pronote dans le fichier pronote.json')
             return
 
         pronote = pronotepy.Client(
@@ -64,17 +76,15 @@ class Pronote(commands.Cog):
             pronote_channel = self.client.get_channel(int(config_pronote['channelID']))
 
             for i in range(devoirs_new_nbr):
-                embed = discord.Embed(
-                    title=devoirs[len(devoirs_file) + i].subject.name,
-                    description=devoirs[len(devoirs_file) + i].description.replace('\n', ' '),
-                    color=0x1E744F
-                )
+                await pronote_channel.send(embed=discord.Embed(
+                        title=devoirs[len(devoirs_file) + i].subject.name,
+                        description=devoirs[len(devoirs_file) + i].description.replace('\n', ' '),
+                        color=0x1E744F
+                    ).set_author(
+                        name=f'Pour le {devoirs[len(devoirs_file) + i].date}'
+                ))
 
-                embed.set_author(name=f'Pour le {devoirs[len(devoirs_file) + i].date}')
-                await pronote_channel.send(embed=embed)
 
-
-# Fonction principales (fonctions très utiles)
 def open_file(repertory, file, action, file_data=None):
     with open(repertory + file + '.json', action) as json_file:
         if action == 'r':
