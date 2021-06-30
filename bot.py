@@ -4,7 +4,6 @@ import discord
 import json
 import os
 import pronotepy
-from art import *
 from discord.ext import tasks
 
 intents = discord.Intents.default()
@@ -13,16 +12,14 @@ client = discord.Client(intents=intents)
 
 mainFiles = './'
 
-# Configuation des fichiers morpion.json et config.json par défault
-morpionJson = {'player': '', 'tours': 0, 'joueur': 'O', 'entree': 0, 'victoire': False, 'plateau': ' 123456789',
-               'bot': '', 'dernier': ''}
+# Configuration des fichiers config.json par défaut
 configJson = {'token': '0', 'prefix': ';'}
-
 
 # Fonction
 #  principales (fonctions très utiles)
 def openFile(repertory, file, action, fileData=None):
-    """Permet de créer ou ouvrir des fichier json. Dans action il faut mettre 'r' pour lire et 'w' pour remplacer le contenu du fichier par fileData. Si le fichier n'existe pas, il faut faire 'w'."""
+    """Permet de créer ou ouvrir des fichier json. Dans action il faut mettre 'r' pour lire et 'w' pour remplacer le
+    contenu du fichier par fileData. Si le fichier n'existe pas, il faut faire 'w'."""
     with open(repertory + file + '.json', action) as jsonFile:
         if action == 'r':
             fileData = json.load(jsonFile)
@@ -43,15 +40,6 @@ def verifyFile(repertory, file, fileJson):
                 fileData[cle] = fileJson[cle]
         openFile(repertory, file, 'w', fileData)
     return fileData
-
-
-def createDir(repertory):
-    """Créé un dossier, et si n'existe pas ne fait rien"""
-    try:
-        os.mkdir(repertory)
-    except:
-        pass
-
 
 # Création/vérifcation du fichier config
 config = verifyFile(mainFiles, 'config', configJson)
@@ -77,7 +65,7 @@ async def devoirs_pronote():
                                        password=configPronote['password'])
 
             if configPronote['folderName'] != None:
-                createDir(configPronote['folderName'])
+                os.makedirs(configPronote['folderName'])
                 filesDir += f'{configPronote["folderName"]}/'
 
             if (pronote.logged_in and (configPronote['channelID'] != None)):
