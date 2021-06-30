@@ -18,11 +18,11 @@ A Pronote notifier discord bot.
 
 ## Installation
 ```sh
-- git clone https://github.com/drawbu/drawbot
+git clone https://github.com/drawbu/drawbot
 
-- cd /path
+cd /path
 
-- pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 
