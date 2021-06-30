@@ -36,7 +36,6 @@ This file stocks your bot's **token** and **prefix** like this:
 
 In `token`, you need to add your bot's token.
 In `prefix`, the prefix your bot's will use without and restart.
-It's the only file that you need to change to run the bot by your own.
 
 ### pronote.json
 
