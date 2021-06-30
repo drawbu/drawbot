@@ -1,4 +1,7 @@
 # discord-drawbot version 1.1
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/95fca3eeb6184cd487b0bcca0bcd1d2e)](https://app.codacy.com/gh/drawbu/drawbot?utm_source=github.com&utm_medium=referral&utm_content=drawbu/drawbot&utm_campaign=Badge_Grade_Settings)
+
 This is my discord's bot. If you things about an upgrade in **efficiency**, or if you see an **issue**, please tell me. Thanks a lot!
 
 All useful functions have a documentation.
