@@ -10,28 +10,19 @@ intents = discord.Intents.default()
 intents.members = True
 client = discord.Client(intents=intents)
 
-mainFiles = './'
-
-# Configuration des fichiers config.json par défaut
-configJson = {'token': '0', 'prefix': ';'}
-
 
 # Fonction principales (fonctions très utiles)
 def open_file(repertory, file, action, file_data=None):
-    """Permet de créer ou ouvrir des fichier json. Dans action il faut mettre 'r' pour lire et 'w' pour remplacer le
-    contenu du fichier par fileData. Si le fichier n'existe pas, il faut faire 'w'."""
-    with open(repertory + file + '.json', action) as jsonFile:
+    with open(repertory + file + '.json', action) as json_file:
         if action == 'r':
-            file_data = json.load(jsonFile)
+            file_data = json.load(json_file)
         elif action == 'w':
-            json.dump(file_data, jsonFile, indent=4)
-        jsonFile.close()
+            json.dump(file_data, json_file, indent=4)
+        json_file.close()
         return file_data
 
 
 def verify_file(repertory, file, file_json):
-    """Nécessite openFile(). Permet de créer un fichier si il n'existe pas et sinon de vérifier si le contenu du fichier
-     correspond bien à au modèle (fileJson)."""
     if (file + '.json') not in os.listdir(repertory):
         open_file(repertory, file, 'w', file_json)
     file_data = open_file(repertory, file, 'r', 0)
@@ -41,11 +32,6 @@ def verify_file(repertory, file, file_json):
                 file_data[cle] = file_json[cle]
         open_file(repertory, file, 'w', file_data)
     return file_data
-
-
-# Création/vérification du fichier config
-config = verify_file(mainFiles, 'config', configJson)
-token = config['token']
 
 
 @client.event
@@ -58,9 +44,9 @@ async def on_ready():
 async def devoirs_pronote():
     if datetime.now().hour not in [22, 23, 0, 1, 2, 3, 4, 5]:
         files_dir = './'
-        config_pronote = verify_file(files_dir, 'pronote',
-                                    {'username': None, 'password': None, 'folderName': None, 'channelID': None,
-                                    'url': None})
+        config_pronote = verify_file(files_dir, 'pronote', {
+            'username': None, 'password': None, 'folderName': None, 'channelID': None, 'url': None
+        })
 
         if config_pronote['username'] is not None \
                 and config_pronote['password'] is not None \
@@ -94,7 +80,6 @@ async def devoirs_pronote():
                         await pronote_channel.send(embed=embed)
 
 
-if token is not None:
-    client.run(token)
-else:
-    print('Pas de token dans le fichier config')
+if 'config.json' not in os.listdir('./'):
+    open_file('./', 'config', 'w', {'token': input('discord bot token: ')})
+client.run(open_file('./', 'config', 'r').get('token'))
