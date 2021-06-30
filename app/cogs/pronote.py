@@ -23,13 +23,13 @@ class Pronote(commands.Cog):
         files_dir = ''
         config_pronote = open_file(files_dir, 'pronote', 'r')
 
-        if config_pronote['username'] is None:
+        if config_pronote.get('username') is None:
             return
 
-        if config_pronote['password'] is None:
+        if config_pronote.get('password') is None:
             return
 
-        if config_pronote['url'] is None:
+        if config_pronote.get('url') is None:
             return
 
         pronote = pronotepy.Client(
