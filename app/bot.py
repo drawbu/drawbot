@@ -6,6 +6,7 @@ from discord.ext import commands
 class Bot(commands.Bot):
 
     def __init__(self):
+        """initialize the bot and load the config for token and prefix."""
         self.embed_color = 0x1E744F
         self._token = None
 
