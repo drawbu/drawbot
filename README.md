@@ -15,6 +15,17 @@ A Pronote notifier discord bot.
 :---: | :---
 :warning: | at the first launch, it might send a lot of messages
 
+
+## Installation
+```sh
+- git clone https://github.com/drawbu/drawbot
+
+- cd /path
+
+- pip install -r requirements.txt
+```
+
+
 ## files documentation
 
 On first start, the bot will create **3** json files :
@@ -36,7 +47,6 @@ This file stocks your bot's **token** and **prefix** like this:
 
 In `token`, you need to add your bot's token.
 In `prefix`, the prefix your bot's will use without and restart.
-It's the only file that you need to change to run the bot by your own.
 
 ### pronote.json
 
