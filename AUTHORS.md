@@ -1,8 +1,6 @@
 # Credits
 
-
 ## Development Lead
-
 
 * [drawbu](https://https://github.com/drawbu "drawbu")
 
