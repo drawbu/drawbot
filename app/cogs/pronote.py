@@ -31,7 +31,7 @@ class Pronote(commands.Cog):
         if not os.path.isfile('app/pronote.json'):
             json_file('pronote', 'w', self.default_pronote_config)
 
-        config_pronote = json_file(files_dir, 'pronote')
+        config_pronote = json_file('pronote')
 
         for key, name in {
             'username': "nom d'utilisateur",
