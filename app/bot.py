@@ -6,10 +6,18 @@ from discord.ext import commands
 class Bot(commands.Bot):
 
     def __init__(self):
+        self.embed_color = 0x1E744F
+        self._token = None
+
+        if not os.path.isfile('app/config.json'):
+            with open('config.json', 'w') as f:
+                json.dump({'token': None, 'prefix': ';'}, f, indent=4)
+            return
+
         with open('app/config.json') as f:
             config = json.load(f)
 
-        super().__init__(config.get('prefix'))
+        super().__init__(config.get('prefix', ';'))
         self._token = config.get('token')
 
         for filename in os.listdir("app/cogs"):
@@ -18,7 +26,7 @@ class Bot(commands.Bot):
 
     def run(self):
         if not self._token:
-            print('no token found')
+            print('veuillez indiquer token Discord dans le fichier config.json')
             return
 
         super().run(self._token)
