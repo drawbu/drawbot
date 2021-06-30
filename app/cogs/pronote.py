@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 class Pronote(commands.Cog):
 
     def __init__(self, client):
+        """initialize the search for new homeworks"""
         self.default_pronote_config = {
             "username": None, "password": None,  "channelID": None, "url": None
         }

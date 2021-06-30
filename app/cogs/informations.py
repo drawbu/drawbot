@@ -6,6 +6,7 @@ from discord.ext import commands
 class Informations(commands.Cog):
 
     def __init__(self, client):
+        """initialize the different commands"""
         self.client = client
 
     @commands.command(
@@ -14,9 +15,9 @@ class Informations(commands.Cog):
     async def help_command(self, ctx):
         help_embed = discord.Embed(
             title="Help of the Pronote",
-            description="Un bot qui traque vos devoir pronote et vous les notifient sur discord",
+            description="Un bot qui traque vos devoir pronote et vous les notifient sur discord.",
             color=self.client.embed_color
-        )
+        ). add_field(name=f'{ctx.prefix}here', value='change le salon d \'envoi des nouveaux devoirs')
 
         await ctx.send(embed=help_embed)
 
