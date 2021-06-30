@@ -1,9 +1,9 @@
 from datetime import timedelta, datetime
 
-import discord
-import json
 import os
+import json
 import pronotepy
+import discord
 from discord.ext import tasks
 
 intents = discord.Intents.default()
@@ -17,16 +17,16 @@ configJson = {'token': '0', 'prefix': ';'}
 
 
 # Fonction principales (fonctions très utiles)
-def open_file(repertory, file, action, fileData=None):
+def open_file(repertory, file, action, file_data=None):
     """Permet de créer ou ouvrir des fichier json. Dans action il faut mettre 'r' pour lire et 'w' pour remplacer le
     contenu du fichier par fileData. Si le fichier n'existe pas, il faut faire 'w'."""
     with open(repertory + file + '.json', action) as jsonFile:
         if action == 'r':
-            fileData = json.load(jsonFile)
+            file_data = json.load(jsonFile)
         elif action == 'w':
-            json.dump(fileData, jsonFile, indent=4)
+            json.dump(file_data, jsonFile, indent=4)
         jsonFile.close()
-        return fileData
+        return file_data
 
 
 def verify_file(repertory, file, file_json):
@@ -43,7 +43,7 @@ def verify_file(repertory, file, file_json):
     return file_data
 
 
-# Création/vérifcation du fichier config
+# Création/vérification du fichier config
 config = verify_file(mainFiles, 'config', configJson)
 token = config['token']
 
@@ -57,42 +57,44 @@ async def on_ready():
 @tasks.loop(seconds=300)
 async def devoirs_pronote():
     if datetime.now().hour not in [22, 23, 0, 1, 2, 3, 4, 5]:
-        filesDir = './'
-        configPronote = verify_file(filesDir, 'pronote',
+        files_dir = './'
+        config_pronote = verify_file(files_dir, 'pronote',
                                     {'username': None, 'password': None, 'folderName': None, 'channelID': None,
                                     'url': None})
 
-        if configPronote['username'] != None and configPronote['password'] != None and configPronote['url'] != None:
-            pronote = pronotepy.Client(configPronote['url'], username=configPronote['username'],
-                                       password=configPronote['password'])
+        if config_pronote['username'] is not None \
+                and config_pronote['password'] is not None \
+                and config_pronote['url'] is not None:
+            pronote = pronotepy.Client(config_pronote['url'], username=config_pronote['username'],
+                                       password=config_pronote['password'])
 
-            if configPronote['folderName'] != None:
-                os.makedirs(configPronote['folderName'])
-                filesDir += f'{configPronote["folderName"]}/'
+            if config_pronote['folderName'] is not None:
+                os.makedirs(config_pronote['folderName'])
+                files_dir += f'{config_pronote["folderName"]}/'
 
-            if (pronote.logged_in and (configPronote['channelID'] != None)):
+            if pronote.logged_in and (config_pronote['channelID'] is not None):
                 devoirs = pronote.homework(pronote.start_day,
                                            pronote.start_day + timedelta(days=360))
-                devoirsFile = verify_file(filesDir, 'devoirs', [])
-                devoirsList = []
+                devoirs_file = verify_file(files_dir, 'devoirs', [])
+                devoirs_list = []
                 for i in devoirs:
                     description = i.description.replace('\n', ' ')
-                    devoirsList.append(f'{i.date} : {i.subject.name} {description}')
+                    devoirs_list.append(f'{i.date} : {i.subject.name} {description}')
 
-                if len(devoirsList) > len(devoirsFile):
-                    open_file(filesDir, 'devoirs', 'w', devoirsList)
-                    devoirsNewNbr = len(devoirsList) - len(devoirsFile)
-                    print(f'[PRONOTE] {devoirsNewNbr} nouveaux devoirs !')
-                    pronoteChannel = client.get_channel(int(configPronote['channelID']))
-                    for i in range(devoirsNewNbr):
-                        embed = discord.Embed(title=devoirs[len(devoirsFile) + i].subject.name,
-                                              description=devoirs[len(devoirsFile) + i].description.replace('\n', ' '),
+                if len(devoirs_list) > len(devoirs_file):
+                    open_file(files_dir, 'devoirs', 'w', devoirs_list)
+                    devoirs_new_nbr = len(devoirs_list) - len(devoirs_file)
+                    print(f'[PRONOTE] {devoirs_new_nbr} nouveaux devoirs !')
+                    pronote_channel = client.get_channel(int(config_pronote['channelID']))
+                    for i in range(devoirs_new_nbr):
+                        embed = discord.Embed(title=devoirs[len(devoirs_file) + i].subject.name,
+                                              description=devoirs[len(devoirs_file) + i].description.replace('\n', ' '),
                                               color=0x1E744F)
-                        embed.set_author(name=f'Pour le {devoirs[len(devoirsFile) + i].date}')
-                        await pronoteChannel.send(embed=embed)
+                        embed.set_author(name=f'Pour le {devoirs[len(devoirs_file) + i].date}')
+                        await pronote_channel.send(embed=embed)
 
 
-if token != None:
+if token is not None:
     client.run(token)
 else:
     print('Pas de token dans le fichier config')
