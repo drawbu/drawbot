@@ -18,6 +18,7 @@ class Bot(commands.Bot):
 
     def run(self):
         if not self._token:
+            print('no token found')
             return
 
         super().run(self._token)

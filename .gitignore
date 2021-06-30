@@ -1,5 +1,5 @@
 venv
 .idea
-pronote.json
+app/pronote.json
 app/config.json
-devoirs.json
+app/devoirs.json
