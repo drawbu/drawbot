@@ -6,7 +6,7 @@ from discord.ext import commands
 class Informations(commands.Cog):
 
     def __init__(self, client):
-        """initialize the different commands"""
+        """Initialize the different commands."""
         self.client = client
 
     @commands.command(
