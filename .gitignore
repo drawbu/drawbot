@@ -3,3 +3,4 @@ venv
 app/pronote.json
 app/config.json
 app/devoirs.json
+__pycache__
