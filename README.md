@@ -25,6 +25,11 @@ cd /path
 pip install -r requirements.txt
 ```
 
+## Launch
+```
+py run.py
+```
+
 
 ## files documentation
 
