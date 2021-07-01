@@ -32,6 +32,10 @@ class Bot(commands.Bot):
             print('veuillez indiquer token Discord dans le fichier config.json')
             return
 
+        if self._token == "null":
+            print('veuillez indiquer token Discord dans le fichier config.json')
+            return
+
         super().run(self._token)
 
     async def on_ready(self):
