@@ -15,7 +15,6 @@ A Pronote notifier discord bot.
 :---: | :---
 :warning: | at the first launch, it might send a lot of messages
 
-
 ## Installation
 ```sh
 git clone https://github.com/drawbu/drawbot
@@ -26,10 +25,9 @@ pip install -r requirements.txt
 ```
 
 ## Launch
-```
+```sh
 py run.py
 ```
-
 
 ## files documentation
 
