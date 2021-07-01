@@ -65,6 +65,8 @@ You pronote credentials.
     "url": null // School pronote url
 }
 ```
+If you can't connect to Pronote, check if your establishment is not using an ENT.
+In this case, see what you need to do in the pronote's wrapper project: https://github.com/bain3/pronotepy
 
 ### app/ devoirs.json
 Automatically generated JSON containing homeworks information.

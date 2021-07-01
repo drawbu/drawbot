@@ -1,0 +1,4 @@
+{
+    "token": "000000000", // bot token
+    "prefix": "!" // bot prefix
+}

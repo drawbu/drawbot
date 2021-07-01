@@ -1,0 +1,7 @@
+{
+    "username": "demonstration",  // Pronote username
+    "password": "pronotevs",  // Pronote password
+    "channelID": null, // Discord's channel to send homeworks
+    "url": "https://0000000a.index-education.net/pronote/eleve.html'" // School pronote url
+}
+
