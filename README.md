@@ -11,9 +11,10 @@
 
 A Pronote notifier discord bot.
 
-:bangbang: | don't try with a wrong username or password too many time, or you can get banned from Pronote
+:bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote
 :---: | :---
-:warning: | at the first launch, it might send a lot of messages
+:warning: | At the first launch, it might send a lot of messages
+:warning: | We do not take responsibility for a possible leak of your passwords, which is why you must host the bot yourself
 
 ## Installation
 ```sh
