@@ -10,12 +10,12 @@ class Bot(commands.Bot):
         self.embed_color = 0x1E744F
         self._token = None
 
-        if not os.path.isfile('app/config.json'):
+        if not os.path.isfile('config.json'):
             with open('config.json', 'w') as f:
                 json.dump({'token': None, 'prefix': ';'}, f, indent=4)
             return
 
-        with open('app/config.json') as f:
+        with open('config.json') as f:
             config = json.load(f)
 
         super().__init__(config.get('prefix', ';'))
