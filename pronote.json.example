@@ -1,0 +1,7 @@
+{
+    "username": null,  // Pronote username
+    "password": null,  // Pronote password
+    "channelID": null, // Channel to send homeworks
+    "url": null // School pronote url
+}
+
