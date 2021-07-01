@@ -33,13 +33,13 @@ py run.py
 
 ## files documentation
 
-On first start, the bot will create **3** json files :
+On first start, the bot will create **3** json files in the **app** folder:
 
 -   config.json
 -   devoirs.json
 -   pronote.json
 
-### config.json
+### app/ config.json
 
 This file stocks your bot's **token** and **prefix** like this:
 
@@ -53,7 +53,7 @@ This file stocks your bot's **token** and **prefix** like this:
 In `token`, you need to add your bot's token.
 In `prefix`, the prefix your bot's will use without and restart.
 
-### pronote.json
+### app/ pronote.json
 
 You pronote credentials.
 
@@ -66,7 +66,7 @@ You pronote credentials.
 }
 ```
 
-### devoirs.json
+### app/ devoirs.json
 Automatically generated JSON containing homeworks information.
 
 *Do not modify*
