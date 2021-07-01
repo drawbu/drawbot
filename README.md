@@ -1,4 +1,4 @@
-# discord-drawbot version 1.1
+# discord-drawbot version 2.0
 ***Made by drawbu***
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/95fca3eeb6184cd487b0bcca0bcd1d2e)](https://app.codacy.com/gh/drawbu/drawbot?utm_source=github.com&utm_medium=referral&utm_content=drawbu/drawbot&utm_campaign=Badge_Grade_Settings)
