@@ -29,7 +29,7 @@ pip install -r requirements.txt
 py run.py
 ```
 
-## files documentation
+## Files documentation
 
 On first start, the bot will create **3** json files in the **app** folder:
 
