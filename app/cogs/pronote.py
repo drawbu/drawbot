@@ -43,11 +43,18 @@ class Pronote(commands.Cog):
                 print(f"veuillez indiquer un {name} Pronote dans le fichier pronote.json")
                 return
 
-        pronote = pronotepy.Client(
-            config_pronote['url'],
-            username=config_pronote['username'],
-            password=config_pronote['password']
-        )
+        try:
+            pronote = pronotepy.Client(
+                config_pronote['url'],
+                username=config_pronote['username'],
+                password=config_pronote['password']
+            )
+        except pronotepy.CryptoError:
+            print("Connexion à Pronote échoué. Mauvais nom d'utilisateur ou mot de passe.")
+            return
+        except pronotepy.PronoteAPIError:
+            print("Connexion à Pronote échoué")
+            return
 
         if config_pronote['folderName'] is not None:
             os.makedirs(config_pronote['folderName'])
@@ -61,10 +68,7 @@ class Pronote(commands.Cog):
             print("Channel non-trouvé ou non-existant")
             return
 
-        devoirs = pronote.homework(
-            pronote.start_day,
-            pronote.start_day + timedelta(days=360)
-        )
+        devoirs = pronote.homework(pronote.start_day)
 
         devoirs_file = json_file('devoirs')
         devoirs_list = []
