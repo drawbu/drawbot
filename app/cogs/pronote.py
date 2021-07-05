@@ -11,7 +11,7 @@ class Pronote(commands.Cog):
     def __init__(self, client):
         """Initialize the search for new homeworks."""
         self.default_pronote_config = {
-            "username": None, "password": None,  "channelID": None, "url": None
+            "username": None, "password": None, "channelID": None, "url": None
         }
 
         self.client = client
@@ -77,24 +77,27 @@ class Pronote(commands.Cog):
             description = homework.description.replace('\n', ' ')
             homeworks_list.append(f'{homework.date} : {homework.subject.name} {description}')
 
-        if len(homeworks_list) < len(homeworks_file):
+        if homeworks_list == homeworks_file:
+            print("Aucun nouveau devoir trouvé.")
             return
 
         json_file('devoirs', 'w', homeworks_list)
-        devoirs_new_nbr = len(homeworks_list) - len(homeworks_file)
-        print(f'[PRONOTE] {devoirs_new_nbr} nouveaux devoirs !')
         pronote_channel = self.client.get_channel(int(config_pronote['channelID']))
+        new_homework_num = 0
 
-        for i in range(devoirs_new_nbr):
-            await pronote_channel.send(
-                embed=discord.Embed(
-                    title=current_homeworks[len(homeworks_file) + i].subject.name,
-                    description=current_homeworks[len(homeworks_file) + i].description.replace('\n', ' '),
-                    color=0x1E744F
-                ).set_author(
-                    name=f'Pour le {current_homeworks[len(homeworks_file) + i].date}'
+        for homework_num, homework in enumerate(homeworks_list):
+            if homework not in homeworks_file:
+                new_homework_num += 1
+                await pronote_channel.send(
+                    embed=discord.Embed(
+                        title=current_homeworks[homework_num].subject.name,
+                        description=current_homeworks[homework_num].description.replace('\n', ' '),
+                        color=0x1E744F
+                    ).set_author(
+                        name=f'Pour le {current_homeworks[homework_num].date}'
+                    )
                 )
-            )
+        print(f'[PRONOTE] {new_homework_num} nouveaux devoirs !')
 
 
 def json_file(file, action='r', file_data=None):
