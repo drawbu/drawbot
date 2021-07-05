@@ -68,12 +68,12 @@ class Pronote(commands.Cog):
             print("Channel non-trouvé ou non-existant")
             return
 
-        devoirs = pronote.homework(pronote.start_day)
+        current_homeworks = pronote.homework(pronote.start_day)
 
         devoirs_file = json_file('devoirs')
         devoirs_list = []
 
-        for i in devoirs:
+        for i in current_homeworks:
             description = i.description.replace('\n', ' ')
             devoirs_list.append(f'{i.date} : {i.subject.name} {description}')
 
@@ -88,11 +88,11 @@ class Pronote(commands.Cog):
         for i in range(devoirs_new_nbr):
             await pronote_channel.send(
                 embed=discord.Embed(
-                    title=devoirs[len(devoirs_file) + i].subject.name,
-                    description=devoirs[len(devoirs_file) + i].description.replace('\n', ' '),
+                    title=current_homeworks[len(devoirs_file) + i].subject.name,
+                    description=current_homeworks[len(devoirs_file) + i].description.replace('\n', ' '),
                     color=0x1E744F
                 ).set_author(
-                    name=f'Pour le {devoirs[len(devoirs_file) + i].date}'
+                    name=f'Pour le {current_homeworks[len(devoirs_file) + i].date}'
                 )
             )
 
