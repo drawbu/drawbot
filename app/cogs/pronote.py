@@ -73,9 +73,9 @@ class Pronote(commands.Cog):
         homeworks_file = json_file('devoirs')
         homeworks_list = []
 
-        for i in current_homeworks:
+        for homework in current_homeworks:
             description = i.description.replace('\n', ' ')
-            homeworks_list.append(f'{i.date} : {i.subject.name} {description}')
+            homeworks_list.append(f'{homework.date} : {homework.subject.name} {description}')
 
         if len(homeworks_list) < len(homeworks_file):
             return
