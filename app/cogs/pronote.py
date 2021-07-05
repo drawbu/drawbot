@@ -70,29 +70,29 @@ class Pronote(commands.Cog):
 
         current_homeworks = pronote.homework(pronote.start_day)
 
-        devoirs_file = json_file('devoirs')
+        homeworks_file = json_file('devoirs')
         devoirs_list = []
 
         for i in current_homeworks:
             description = i.description.replace('\n', ' ')
             devoirs_list.append(f'{i.date} : {i.subject.name} {description}')
 
-        if len(devoirs_list) < len(devoirs_file):
+        if len(devoirs_list) < len(homeworks_file):
             return
 
         json_file('devoirs', 'w', devoirs_list)
-        devoirs_new_nbr = len(devoirs_list) - len(devoirs_file)
+        devoirs_new_nbr = len(devoirs_list) - len(homeworks_file)
         print(f'[PRONOTE] {devoirs_new_nbr} nouveaux devoirs !')
         pronote_channel = self.client.get_channel(int(config_pronote['channelID']))
 
         for i in range(devoirs_new_nbr):
             await pronote_channel.send(
                 embed=discord.Embed(
-                    title=current_homeworks[len(devoirs_file) + i].subject.name,
-                    description=current_homeworks[len(devoirs_file) + i].description.replace('\n', ' '),
+                    title=current_homeworks[len(homeworks_file) + i].subject.name,
+                    description=current_homeworks[len(homeworks_file) + i].description.replace('\n', ' '),
                     color=0x1E744F
                 ).set_author(
-                    name=f'Pour le {current_homeworks[len(devoirs_file) + i].date}'
+                    name=f'Pour le {current_homeworks[len(homeworks_file) + i].date}'
                 )
             )
 
