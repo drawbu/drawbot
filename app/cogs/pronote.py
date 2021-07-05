@@ -71,17 +71,17 @@ class Pronote(commands.Cog):
         current_homeworks = pronote.homework(pronote.start_day)
 
         homeworks_file = json_file('devoirs')
-        devoirs_list = []
+        homeworks_list = []
 
         for i in current_homeworks:
             description = i.description.replace('\n', ' ')
-            devoirs_list.append(f'{i.date} : {i.subject.name} {description}')
+            homeworks_list.append(f'{i.date} : {i.subject.name} {description}')
 
-        if len(devoirs_list) < len(homeworks_file):
+        if len(homeworks_list) < len(homeworks_file):
             return
 
-        json_file('devoirs', 'w', devoirs_list)
-        devoirs_new_nbr = len(devoirs_list) - len(homeworks_file)
+        json_file('devoirs', 'w', homeworks_list)
+        devoirs_new_nbr = len(homeworks_list) - len(homeworks_file)
         print(f'[PRONOTE] {devoirs_new_nbr} nouveaux devoirs !')
         pronote_channel = self.client.get_channel(int(config_pronote['channelID']))
 
