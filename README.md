@@ -1,4 +1,4 @@
-# discord-drawbot version 1.1
+# discord-drawbot version 2.0
 ***Made by drawbu***
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/95fca3eeb6184cd487b0bcca0bcd1d2e)](https://app.codacy.com/gh/drawbu/drawbot?utm_source=github.com&utm_medium=referral&utm_content=drawbu/drawbot&utm_campaign=Badge_Grade_Settings)
@@ -11,9 +11,10 @@
 
 A Pronote notifier discord bot.
 
-:bangbang: | don't try with a wrong username or password too many time, or you can get banned from Pronote
+:bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote
 :---: | :---
-:warning: | at the first launch, it might send a lot of messages
+:warning: | At the first launch, it might send a lot of messages
+:warning: | We do not take responsibility for a possible leak of your passwords, which is why you must host the bot yourself
 
 ## Installation
 ```sh
