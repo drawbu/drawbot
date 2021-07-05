@@ -74,7 +74,7 @@ class Pronote(commands.Cog):
         homeworks_list = []
 
         for homework in current_homeworks:
-            description = i.description.replace('\n', ' ')
+            description = homework.description.replace('\n', ' ')
             homeworks_list.append(f'{homework.date} : {homework.subject.name} {description}')
 
         if len(homeworks_list) < len(homeworks_file):
