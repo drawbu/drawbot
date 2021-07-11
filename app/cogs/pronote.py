@@ -4,7 +4,7 @@ import time
 import discord
 import pronotepy
 from discord.ext import commands, tasks
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class Pronote(commands.Cog):
