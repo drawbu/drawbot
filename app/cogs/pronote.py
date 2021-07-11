@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import discord
 import pronotepy
 from discord.ext import commands, tasks
@@ -90,11 +91,9 @@ class Pronote(commands.Cog):
                 new_homework_num += 1
                 await pronote_channel.send(
                     embed=discord.Embed(
-                        title=current_homeworks[homework_num].subject.name,
+                        title=f'{current_homeworks[homework_num].subject.name} pour le <t:1622671200:D>',
                         description=current_homeworks[homework_num].description.replace('\n', ' '),
                         color=0x1E744F
-                    ).set_author(
-                        name=f'Pour le {current_homeworks[homework_num].date}'
                     )
                 )
         print(f'[PRONOTE] {new_homework_num} nouveaux devoirs !')
