@@ -91,7 +91,9 @@ class Pronote(commands.Cog):
                 new_homework_num += 1
                 await pronote_channel.send(
                     embed=discord.Embed(
-                        title=f'{current_homeworks[homework_num].subject.name} pour le <t:1622671200:D>',
+                        title=f'{current_homeworks[homework_num].subject.name} pour le <t:'
+                              f'{int(time.mktime(time.strptime(str(current_homeworks[homework_num].date), "%Y-%m-%d")))}:D>',
+                        # now you can use timestamps in discord like this: <t:timestamp:D>
                         description=current_homeworks[homework_num].description.replace('\n', ' '),
                         color=0x1E744F
                     )
