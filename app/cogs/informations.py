@@ -15,9 +15,15 @@ class Informations(commands.Cog):
     async def help_command(self, ctx):
         help_embed = discord.Embed(
             title="Help of the Pronote",
-            description="Un bot qui traque vos devoir pronote et vous les notifient sur discord.",
+            description=(
+                "Un bot qui traque vos devoir pronote "
+                "et vous les notifient sur discord."
+            ),
             color=self.client.embed_color
-        ). add_field(name=f'{ctx.prefix}here', value='change le salon d \'envoi des nouveaux devoirs')
+        ).add_field(
+            name=f'{ctx.prefix}here',
+            value='change le salon d \'envoi des nouveaux devoirs'
+        )
 
         await ctx.send(embed=help_embed)
 
@@ -30,7 +36,10 @@ class Informations(commands.Cog):
         open_file('app/', 'pronote', 'w', pronote_config)
         await ctx.send(embed=discord.Embed(
             title="Changement de salon",
-            description="Le salon pour envoyer les nouveaux devoirs à bien été mis à jour",
+            description=(
+                "Le salon pour envoyer les nouveaux devoirs "
+                "à bien été mis à jour"
+            ),
             color=self.client.embed_color
         ))
 
