@@ -1,20 +1,30 @@
 import discord
+from discord import Embed
 from discord.ext import commands
+
+from typing import TYPE_CHECKING
+
+from discord.ext.commands import Context
+
+from app import JsonDict
+
+if TYPE_CHECKING:
+    from app.bot import Bot
 
 from app.utils import json_wr
 
 
 class Informations(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         """Initialize the different commands."""
-        self.client = client
+        self.client: Bot = client
 
     @commands.command(
         name='help', aliases=('h', 'aide'),
     )
-    async def help_command(self, ctx):
-        help_embed = discord.Embed(
+    async def help_command(self, ctx: Context) -> None:
+        help_embed: Embed = discord.Embed(
             title="Help of the Pronote",
             description=(
                 "Un bot qui traque vos devoir pronote "
@@ -31,20 +41,22 @@ class Informations(commands.Cog):
     @commands.command(
         name='channel', aliases=('here',),
     )
-    async def change_channel(self, ctx):
-        pronote_config = json_wr('pronote')
+    async def change_channel(self, ctx: Context) -> None:
+        pronote_config: JsonDict = json_wr('pronote')
         pronote_config['channelID'] = ctx.channel.id
         json_wr('pronote', data=pronote_config)
 
-        await ctx.send(embed=discord.Embed(
-            title="Changement de salon",
-            description=(
-                "Le salon pour envoyer les nouveaux devoirs "
-                "à bien été mis à jour"
-            ),
-            color=self.client.embed_color
-        ))
+        await ctx.send(
+            embed=discord.Embed(
+                title="Changement de salon",
+                description=(
+                    "Le salon pour envoyer les nouveaux devoirs "
+                    "à bien été mis à jour"
+                ),
+                color=self.client.embed_color
+            )
+        )
 
 
-def setup(client):
+def setup(client: Bot) -> None:
     client.add_cog(Informations(client))

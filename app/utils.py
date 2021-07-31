@@ -1,10 +1,8 @@
 import json
 from os import path
-from typing import Optional, Dict, Union, List, Any
+from typing import Optional
 
-JsonDict = Dict[str, Any]
-JsonList = List[Any]
-JsonData = Union[JsonDict, JsonList]
+from app import JsonData
 
 
 def json_wr(

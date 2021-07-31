@@ -5,39 +5,46 @@ from datetime import datetime
 import discord
 import pronotepy
 from discord.ext import commands, tasks
+from typing import TYPE_CHECKING, Dict, Optional, List
+
+from app import JsonData, JsonList
+
+if TYPE_CHECKING:
+    from app.bot import Bot
 
 from app.utils import json_wr
 
 
 class Pronote(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: Bot):
         """Initialize the search for new homeworks."""
-        self.default_pronote_config = {
+        self.default_pronote_config: Dict[str, Optional[str]] = {
             "username": None,
             "password": None,
-            "channelID": None, "url": None
+            "channelID": None,
+            "url": None
         }
 
-        self.client = client
+        self.client: Bot = client
 
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         self.homeworks_pronote.start()
 
     @tasks.loop(seconds=300)
-    async def homeworks_pronote(self):
+    async def homeworks_pronote(self) -> None:
         hour = datetime.now().hour
 
         if hour > 22 or hour < 5:
             return
 
-        files_dir = 'app/'
+        files_dir: str = 'app/'
 
         if not os.path.isfile('app/pronote.json'):
             json_wr('pronote', self.default_pronote_config)
 
-        config_pronote = json_wr('pronote')
+        config_pronote: JsonData = json_wr('pronote')
 
         for key, name in {
             'username': "nom d'utilisateur",
@@ -52,7 +59,7 @@ class Pronote(commands.Cog):
                 return
 
         try:
-            pronote = pronotepy.Client(
+            pronote: pronotepy.Client = pronotepy.Client(
                 config_pronote['url'],
                 username=config_pronote['username'],
                 password=config_pronote['password']
@@ -81,13 +88,16 @@ class Pronote(commands.Cog):
             print("Channel non-trouvé ou non-existant")
             return
 
-        current_homeworks = pronote.homework(pronote.start_day)
+        current_homeworks: List[pronote.homework] = pronote.homework(
+            pronote.start_day
+        )
 
-        homeworks_file = json_wr('devoirs')
-        homeworks_list = []
+        homeworks_file: JsonList = json_wr('devoirs')
+        homeworks_list: List[pronote.homework] = []
 
         for homework in current_homeworks:
-            description = homework.description.replace('\n', ' ')
+            description: str = homework.description.replace('\n', ' ')
+
             homeworks_list.append(
                 f'{homework.date} : {homework.subject.name} {description}'
             )
@@ -97,11 +107,11 @@ class Pronote(commands.Cog):
             return
 
         json_wr('devoirs', data=homeworks_list)
-        pronote_channel = self.client.get_channel(
+        pronote_channel: discord.TextChannel = self.client.get_channel(
             int(config_pronote['channelID'])
         )
 
-        new_homework_num = 0
+        new_homework_num: int = 0
 
         for homework_num, homework in enumerate(homeworks_list):
             if homework in homeworks_file:
@@ -109,7 +119,7 @@ class Pronote(commands.Cog):
 
             new_homework_num += 1
 
-            time_marker = int(
+            time_marker: int = int(
                 time.mktime(
                     time.strptime(
                         str(current_homeworks[homework_num].date),
@@ -138,5 +148,5 @@ class Pronote(commands.Cog):
         print(f'[PRONOTE] {new_homework_num} nouveaux devoirs !')
 
 
-def setup(client):
+def setup(client: Bot) -> None:
     client.add_cog(Pronote(client))
