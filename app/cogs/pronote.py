@@ -1,10 +1,12 @@
-import json
 import os
 import time
+from datetime import datetime
+
 import discord
 import pronotepy
 from discord.ext import commands, tasks
-from datetime import datetime
+
+from app.utils import json_wr
 
 
 class Pronote(commands.Cog):
@@ -33,9 +35,9 @@ class Pronote(commands.Cog):
         files_dir = 'app/'
 
         if not os.path.isfile('app/pronote.json'):
-            json_file('pronote', 'w', self.default_pronote_config)
+            json_wr('pronote', self.default_pronote_config)
 
-        config_pronote = json_file('pronote')
+        config_pronote = json_wr('pronote')
 
         for key, name in {
             'username': "nom d'utilisateur",
@@ -81,7 +83,7 @@ class Pronote(commands.Cog):
 
         current_homeworks = pronote.homework(pronote.start_day)
 
-        homeworks_file = json_file('devoirs')
+        homeworks_file = json_wr('devoirs')
         homeworks_list = []
 
         for homework in current_homeworks:
@@ -94,7 +96,7 @@ class Pronote(commands.Cog):
             print("Aucun nouveau devoir trouvé.")
             return
 
-        json_file('devoirs', 'w', homeworks_list)
+        json_wr('devoirs', data=homeworks_list)
         pronote_channel = self.client.get_channel(
             int(config_pronote['channelID'])
         )
@@ -104,7 +106,8 @@ class Pronote(commands.Cog):
         for homework_num, homework in enumerate(homeworks_list):
             if homework in homeworks_file:
                 continue
-                new_homework_num += 1
+
+            new_homework_num += 1
 
             time_marker = int(
                 time.mktime(
@@ -133,15 +136,6 @@ class Pronote(commands.Cog):
                 )
             )
         print(f'[PRONOTE] {new_homework_num} nouveaux devoirs !')
-
-
-def json_file(file, action='r', file_data=None):
-    with open(f"app/{file}.json", action) as f:
-        if action == 'r':
-            return json.load(f)
-
-        if action == 'w':
-            json.dump(file_data, f, indent=4)
 
 
 def setup(client):

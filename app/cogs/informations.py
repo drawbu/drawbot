@@ -1,6 +1,7 @@
-import json
 import discord
 from discord.ext import commands
+
+from app.utils import json_wr
 
 
 class Informations(commands.Cog):
@@ -31,9 +32,10 @@ class Informations(commands.Cog):
         name='channel', aliases=('here',),
     )
     async def change_channel(self, ctx):
-        pronote_config = open_file('app/', 'pronote', 'r')
+        pronote_config = json_wr('pronote')
         pronote_config['channelID'] = ctx.channel.id
-        open_file('app/', 'pronote', 'w', pronote_config)
+        json_wr('pronote', data=pronote_config)
+
         await ctx.send(embed=discord.Embed(
             title="Changement de salon",
             description=(
@@ -46,12 +48,3 @@ class Informations(commands.Cog):
 
 def setup(client):
     client.add_cog(Informations(client))
-
-
-def open_file(repertory, file, action, file_data=None):
-    with open(repertory + file + '.json', action) as json_file:
-        if action == 'r':
-            file_data = json.load(json_file)
-        elif action == 'w':
-            json.dump(file_data, json_file, indent=4)
-        return file_data
