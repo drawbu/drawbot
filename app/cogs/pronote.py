@@ -9,15 +9,12 @@ from typing import TYPE_CHECKING, Dict, Optional, List
 
 from app import JsonData, JsonList
 
-if TYPE_CHECKING:
-    from app.bot import Bot
-
 from app.utils import json_wr
 
 
 class Pronote(commands.Cog):
 
-    def __init__(self, client: Bot):
+    def __init__(self, client):
         """Initialize the search for new homeworks."""
         self.default_pronote_config: Dict[str, Optional[str]] = {
             "username": None,
@@ -26,7 +23,7 @@ class Pronote(commands.Cog):
             "url": None
         }
 
-        self.client: Bot = client
+        self.client = client
 
     @commands.Cog.listener()
     async def on_ready(self) -> None:
@@ -148,5 +145,5 @@ class Pronote(commands.Cog):
         print(f'[PRONOTE] {new_homework_num} nouveaux devoirs !')
 
 
-def setup(client: Bot) -> None:
+def setup(client) -> None:
     client.add_cog(Pronote(client))

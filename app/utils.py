@@ -10,7 +10,7 @@ def json_wr(
     data: Optional[JsonData] = None
 ) -> Optional[JsonData]:
     """Read json data or write given data with given file path."""
-    if not path.exists(file_path):
+    if not path.exists(f'app/{file_path}.json'):
         return
 
     with open(

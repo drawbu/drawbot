@@ -8,17 +8,14 @@ from discord.ext.commands import Context
 
 from app import JsonDict
 
-if TYPE_CHECKING:
-    from app.bot import Bot
-
 from app.utils import json_wr
 
 
 class Informations(commands.Cog):
 
-    def __init__(self, client: Bot):
+    def __init__(self, client):
         """Initialize the different commands."""
-        self.client: Bot = client
+        self.client = client
 
     @commands.command(
         name='help', aliases=('h', 'aide'),
@@ -58,5 +55,5 @@ class Informations(commands.Cog):
         )
 
 
-def setup(client: Bot) -> None:
+def setup(client) -> None:
     client.add_cog(Informations(client))
