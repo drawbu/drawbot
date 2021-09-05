@@ -73,10 +73,6 @@ class Pronote(commands.Cog):
             print("Connexion à Pronote échoué")
             return
 
-        if config_pronote['folderName'] is not None:
-            os.makedirs(config_pronote['folderName'])
-            files_dir += f'{config_pronote["folderName"]}/'
-
         if not pronote.logged_in:
             print("Connexion à Pronote échoué")
             return
