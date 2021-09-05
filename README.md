@@ -38,6 +38,8 @@ On first start, the bot will create **3** json files in the **app** folder:
 -   devoirs.json
 -   pronote.json
 
+**DON'T ADD ANY OF THE COMMENTS TO THE FILES**
+
 ### app/ config.json
 
 This file stocks your bot's **token** and **prefix** like this:
