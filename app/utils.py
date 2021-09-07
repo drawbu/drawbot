@@ -18,18 +18,25 @@ def json_wr(
     if_none: if you're trying to read the file and it does not exist
              it will return this
     """
+    open_mode = 'r' if data is None else 'w+'
+    exists = True
+    if not path.exists(f'app/{file_path}.json'):
+        exists = False
+        open_mode = 'w+'
+
     with open(
             f"app/{file_path}.json",
-            'r' if data is None
-            and if_none is None
-            else 'w+'
+            open_mode
     ) as json_file:
 
-        if data is None and if_none is None:
-            return json.load(json_file)
+        if exists:
+            if data is None:
+                return json.load(json_file)
 
-        if data is not None:
             json.dump(data, json_file, indent=4)
             return
 
+        if if_none is None:
+            json.dump(data, json_file, indent=4)
+            return
         return if_none
