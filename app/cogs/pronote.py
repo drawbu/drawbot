@@ -99,9 +99,17 @@ class Pronote(commands.Cog):
             print("Aucun nouveau devoir trouvé.")
             return
 
+        if config_pronote.get('channelID', None) is None:
+            print(
+                'La clé "channelID" dans le fichier app/pronote.json '
+                'n\'est pas définie.'
+            )
+            await self.client.close()
+            return
+
         json_wr('devoirs', data=homeworks_list)
-        pronote_channel: discord.TextChannel = self.client.get_channel(
-            int(config_pronote['channelID'])
+        pronote_channel: discord.TextChannel = await self.client.fetch_channel(
+            int(config_pronote.get('channelID'))
         )
 
         new_homework_num: int = 0
@@ -124,8 +132,8 @@ class Pronote(commands.Cog):
             await pronote_channel.send(
                 embed=discord.Embed(
                     title=(
-                        f'{current_homeworks[homework_num].subject.name} pour'
-                        f'le <t:{time_marker}:D>'
+                        f'{current_homeworks[homework_num].subject.name}\n'
+                        f'pour le <t:{time_marker}:D>'
                     ),
                     # now you can use timestamps in discord like:
                     # <t:timestamp:D>
