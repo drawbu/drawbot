@@ -85,7 +85,7 @@ class Pronote(commands.Cog):
             pronote.start_day
         )
 
-        homeworks_file: JsonList = json_wr('devoirs')
+        homeworks_file: JsonList = json_wr('devoirs', if_none=[])
         homeworks_list: List[pronote.homework] = []
 
         for homework in current_homeworks:
