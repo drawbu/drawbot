@@ -11,6 +11,8 @@
 
 A Pronote notifier discord bot.
 
+Help server: https://discord.gg/XGXydQyKhQ
+
 :bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote
 :---: | :---
 :warning: | At the first launch, it might send a lot of messages
