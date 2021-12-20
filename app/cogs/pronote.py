@@ -1,13 +1,14 @@
 import time
 from datetime import datetime
 from collections import defaultdict
+from typing import List, DefaultDict
 
 import discord
 import pronotepy
+from discord.ext.commands import Context
 from discord.ext import commands, tasks
-from typing import List, DefaultDict
 
-from app import JsonData
+from app import JsonData, JsonDict
 from app.utils import json_wr
 
 
@@ -29,6 +30,8 @@ class Pronote(commands.Cog):
             "channelID": "",
             "url": ""
         }
+
+        date = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
 
         # Does not work at night
         hour = datetime.now().hour
@@ -62,16 +65,11 @@ class Pronote(commands.Cog):
             return
 
         except pronotepy.PronoteAPIError:
-            print("Connexion à Pronote échoué")
+            print(f"{date} - Connexion à Pronote échoué")
             return
 
         if not pronote.logged_in:
-            print("Connexion à Pronote échoué")
-            return
-
-        if not config_pronote.get("channelID"):
-            print("Channel non-trouvé ou inexistant")
-            await self.client.close()
+            print(f"{date} - Connexion à Pronote échoué")
             return
 
         fetched_homeworks: List[pronote.homework] = pronote.homework(
@@ -90,9 +88,16 @@ class Pronote(commands.Cog):
                 }
             )
 
-        pronote_channel: discord.TextChannel = await self.client.fetch_channel(
-            int(config_pronote.get("channelID"))
-        )
+        try:
+            pronote_channel: discord.TextChannel = (
+                await self.client.fetch_channel(
+                    int(config_pronote.get("channelID"))
+                )
+            )
+        except discord.errors.NotFound:
+            print("Channel non-trouvé ou inexistant")
+            await self.client.close()
+            return
 
         if homeworks_file == {} or isinstance(homeworks_file, list):
             json_wr("devoirs", "w", homeworks)
@@ -111,7 +116,7 @@ class Pronote(commands.Cog):
             return
 
         if homeworks == homeworks_file:
-            print("Aucun nouveau devoir trouvé.")
+            print(f"{date} - Aucun nouveau devoir trouvé.")
             return
 
         json_wr("devoirs", "w", homeworks)
