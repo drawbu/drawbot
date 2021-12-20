@@ -155,7 +155,32 @@ class Pronote(commands.Cog):
                     color=0x1E744F
                 )
             )
-        print(f'[PRONOTE] {new_homework_count} nouveaux devoirs !')
+        print(f"{date} - {new_homework_count} nouveaux devoirs !")
+
+    @commands.command(name="homeworks", aliases=("devoirs",))
+    async def change_channel(self, ctx: Context) -> None:
+        homeworks: JsonDict = json_wr("devoirs")
+
+        embed = discord.Embed(
+            title="Prochains devoirs",
+            color=self.client.embed_color
+        )
+
+        today = time.time()
+        for date, homeworks_list in homeworks.items():
+
+            date_timestamp = int(time.mktime(time.strptime(date, "%Y-%m-%d")))
+            if date_timestamp >= today:
+                embed.add_field(
+                    name=f"Pour le <t:{date_timestamp}:D>",
+                    value="\n".join([
+                        f"**- {h['subject']} :** {h['description']}"
+                        for h in homeworks_list
+                    ]),
+                    inline=False
+                )
+
+        await ctx.send(embed=embed)
 
 
 def setup(client) -> None:
