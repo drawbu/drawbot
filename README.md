@@ -13,10 +13,9 @@ A Pronote notifier discord bot.
 
 Help server: https://discord.gg/XGXydQyKhQ
 
-:bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote
-:---: | :---
-:warning: | At the first launch, it might send a lot of messages
-:warning: | We do not take responsibility for a possible leak of your passwords, which is why you must host the bot yourself
+|  :bangbang:  | Don't try with a wrong username or password too many time, or you can get banned from Pronote                        |
+|:------------:|:---------------------------------------------------------------------------------------------------------------------|
+|  :warning:   | We do not take responsibility for a possible leak of your passwords, which is why you need to host the bot yourself. |
 
 ## Installation
 ```sh
@@ -34,27 +33,25 @@ py run.py
 
 ## Files documentation
 
-On first start, the bot will create **3** json files in the **app** folder:
+The bot will create **3** json files in the **app** folder:
 
 -   config.json
 -   devoirs.json
 -   pronote.json
 
-**DON'T ADD ANY OF THE COMMENTS TO THE FILES**
-
 ### app/ config.json
 
-This file stocks your bot's **token** and **prefix** like this:
+This file stocks your bot **token** and **prefix** like this:
 
 ```json5
 {
-    "token": "( ͡° ͜ʖ ͡°)", // bot token
-    "prefix": "!" // bot prefix
+    "token": "( ͡° ͜ʖ ͡°)",
+    "prefix": "!"
 }
 ```
 
-In `token`, you need to add your bot's token.
-In `prefix`, the prefix your bot's will use without and restart.
+In `"token"`, you need to add your bot token.
+In `"prefix"`, the prefix your bot will use without and restart.
 
 ### app/ pronote.json
 
@@ -62,16 +59,15 @@ You pronote credentials.
 
 ```json5
 {
-    "username": null,  // Pronote username
-    "password": null,  // Pronote password
-    "channelID": null, // Channel to send homeworks
-    "url": null // School pronote url
+    "username": "your pronote username",
+    "password": "your pronote password",
+    "channelID": "id of the channel you want to send",
+    "url": "url of your pronote website",
 }
 ```
-If you can't connect to Pronote, check if your establishment is not using an ENT.
-In this case, see what you need to do in the pronote's wrapper project: https://github.com/bain3/pronotepy
+If you can't connect to Pronote, check if your establishment is not using an 
+ENT. In this case, see what you need to do with the help of the pronote wrapper 
+project: [pronotepy](https://github.com/bain3/pronotepy)
 
 ### app/ devoirs.json
 Automatically generated JSON containing homeworks information.
-
-*Do not modify*
