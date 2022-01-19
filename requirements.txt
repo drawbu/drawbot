@@ -1,2 +1,2 @@
 discord~=1.7.3
-pronotepy~=1.4.1
+pronotepy==2.2.0
