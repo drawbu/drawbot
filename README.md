@@ -33,38 +33,34 @@ py run.py
 
 ## Files documentation
 
-The bot will create **3** json files in the **app** folder:
+The bot will create **2** json files in the **app** folder:
 
 -   config.json
 -   devoirs.json
--   pronote.json
 
 ### app/ config.json
 
-This file stocks your bot **token** and **prefix** like this:
+This file stocks your private logins and info's to make to bor running:
 
 ```json5
 {
     "token": "( ͡° ͜ʖ ͡°)",
-    "prefix": "!"
+    "prefix": "!",
+    "channelID": "000000000000000000",
+    "username": "demonstration",
+    "password": "pronotevs",
+    "url": "https://demo.index-education.net/pronote/eleve.html?login=true"
 }
 ```
+THESE ARE JUST EXAMPLES
 
-In `"token"`, you need to add your bot token.
-In `"prefix"`, the prefix your bot will use without and restart.
+In `"token"`, you need to add your bot token. <br>
+In `"prefix"`, the prefix your bot will use. <br>
+In `"channelID"`, the ID of the Discord channel. <br>
+In `"username"`, your Pronote username. <br>
+In `"password"`, your Pronote password. <br>
+In `"url"`, the url of your pronote client. <br>
 
-### app/ pronote.json
-
-You pronote credentials.
-
-```json5
-{
-    "username": "your pronote username",
-    "password": "your pronote password",
-    "channelID": "id of the channel you want to send",
-    "url": "url of your pronote website",
-}
-```
 If you can't connect to Pronote, check if your establishment is not using an 
 ENT. In this case, see what you need to do with the help of the pronote wrapper 
 project: [pronotepy](https://github.com/bain3/pronotepy)
