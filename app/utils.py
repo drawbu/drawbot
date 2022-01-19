@@ -1,33 +1,41 @@
 import json
 import os
-from typing import Optional, List, Dict, Union
+from typing import Optional, Literal
 
 from app import JsonData
 
 
 def json_wr(
-    path: str,
-    mode: str = "r",
+    filename: str,
+    mode: Literal["r", "w"] = "r",
     data: Optional[JsonData] = {}
 ) -> Optional[JsonData]:
     """
-    Read json data or write given data with given file path.
+    Parameters
+    ----------
+    filename : str
+        Name of the file. It opens the file like "app/" + filename + ".json".
+    mode : "r", "w", default="r"
+        Action to perform in the file.
+        "r" to load data, "w" to write in the file.
+    data : JsonData, optional, default={}
+        Data to write in the file if you're in "w" mode.
 
-    file_path: path of the file to write inside
-    data: data to write inside the file (optional)
-    if_none: if you're trying to read the file and it does not exist
-             it will return this
+    Returns
+    -------
+    JsonData, optional
+        Data of the file or default one if the mode is "r".
+        Nothing if the mode is "w".
     """
-    path = f"app/{path}.json"
+    filename = f"app/{filename}.json"
 
-    if mode == "w":
-        with open(path, "w") as f:
-            json.dump(data, f, indent=4)
-            return
-
-    elif mode == "r":
-        if not os.path.isfile(path):
-            with open(path, "w") as f:
-                json.dump(data, f, indent=4)
-        with open(path) as f:
+    if mode == "r":
+        if not os.path.isfile(filename):
+            return data
+        with open(filename) as f:
             return json.load(f)
+
+    elif mode == "w":
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=4)
+    return
