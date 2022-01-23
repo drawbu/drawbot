@@ -2,8 +2,6 @@ import discord
 from discord import Embed
 from discord.ext import commands
 
-from typing import TYPE_CHECKING
-
 from discord.ext.commands import Context
 
 from app import JsonDict

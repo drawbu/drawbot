@@ -10,7 +10,8 @@ def json_wr(
     mode: Literal["r", "w"] = "r",
     data: Optional[JsonData] = {}
 ) -> Optional[JsonData]:
-    """
+    """Write and read json files.
+
     Parameters
     ----------
     filename : str
