@@ -150,18 +150,27 @@ class Pronote(commands.Cog):
         )
 
         today = time.time()
+        homeworks_dict = {}
         for date, homeworks_list in homeworks.items():
 
             date_timestamp = int(time.mktime(time.strptime(date, "%Y-%m-%d")))
             if date_timestamp >= today:
-                embed.add_field(
-                    name=f"Pour le <t:{date_timestamp}:D>",
-                    value="\n".join([
-                        f"**- {h['subject']} :** {h['description']}"
-                        for h in homeworks_list
-                    ]),
-                    inline=False
-                )
+                homeworks_dict[date_timestamp] = homeworks_list
+
+        homeworks_dict = {
+            key: homeworks_dict[key]
+            for key in sorted(homeworks_dict)
+        }
+
+        for date, homeworks_list in homeworks_dict.items():
+            embed.add_field(
+                name=f"Pour le <t:{date}:D>",
+                value="\n".join([
+                    f"**- {h['subject']} :** {h['description']}"
+                    for h in homeworks_list
+                ]),
+                inline=False
+            )
 
         await ctx.send(embed=embed)
 
