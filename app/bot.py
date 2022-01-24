@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Optional
 
 from discord.ext import commands
@@ -31,8 +32,7 @@ class Bot(commands.Bot):
                     f"Veuillez indiquer remplir la valeur \"{key}\" "
                     "dans le fichier config.json"
                 )
-                self.close()
-                return
+                sys.exit()
 
         super().__init__(self.config.get("prefix", ";"))
         self._token = self.config.get("token")
