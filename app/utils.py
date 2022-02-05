@@ -8,7 +8,7 @@ from app import JsonData
 def json_wr(
     filename: str,
     mode: Literal["r", "w"] = "r",
-    data: Optional[JsonData] = {}
+    data=None
 ) -> Optional[JsonData]:
     """Write and read json files.
 
@@ -28,13 +28,21 @@ def json_wr(
         Data of the file or default one if the mode is "r".
         Nothing if the mode is "w".
     """
+    if data is None:
+        data = {}
+
     filename = f"app/{filename}.json"
 
     if mode == "r":
         if not os.path.isfile(filename):
             return data
-        with open(filename) as f:
-            return json.load(f)
+        try:
+            with open(filename) as f:
+                return json.load(f)
+        except json.decoder.JSONDecodeError:
+            with open(filename, "w") as f:
+                json.dump(data, f, indent=4)
+            return {}
 
     elif mode == "w":
         with open(filename, "w") as f:
