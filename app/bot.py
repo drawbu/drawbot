@@ -1,5 +1,5 @@
-import json
 import os
+import sys
 from typing import Optional
 
 from discord.ext import commands
@@ -15,31 +15,37 @@ class Bot(commands.Bot):
         self.embed_color: int = 0x1E744F
         self._token: Optional[str] = None
 
-        if not os.path.isfile('app/config.json'):
-            with open('app/config.json', 'w') as f:
-                json.dump({'token': "null", 'prefix': ';'}, f, indent=4)
-            return
+        default_config: JsonData = {
+            "token": "",
+            "prefix": "!",
+            "channelID": "",
+            "username": "",
+            "password": "",
+            "url": ""
+        }
 
-        config: JsonData = json_wr('config')
-        super().__init__(config.get('prefix', ';'))
+        self.config: JsonData = json_wr("config")
 
-        self._token = config.get('token')
-        self.remove_command('help')
+        for key in default_config.keys():
+            if self.config.get(key, "") == "":
+                print(
+                    f"Veuillez indiquer remplir la valeur \"{key}\" "
+                    "dans le fichier config.json"
+                )
+                sys.exit()
+
+        super().__init__(self.config.get("prefix", ";"))
+        self._token = self.config.get("token")
+        self.config.pop("token")
+
+        self.remove_command("help")
 
         for filename in os.listdir("app/cogs"):
-            if filename.endswith('.py'):
-                self.load_extension(f'app.cogs.{filename[:-3]}')
+            if filename.endswith(".py"):
+                self.load_extension(f"app.cogs.{filename[:-3]}")
 
     def run(self) -> None:
-        if not self._token:
-            print('veuillez indiquer token Discord dans le fichier config.json')
-            return
-
-        if self._token == "null":
-            print('veuillez indiquer token Discord dans le fichier config.json')
-            return
-
         super().run(self._token)
 
     async def on_ready(self) -> None:
-        print(f'Connecté en temps que {self.user.name} !')
+        print(f"Connecté en temps que {self.user.name} !")

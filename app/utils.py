@@ -1,42 +1,50 @@
 import json
-from os import path
-from typing import Optional, List, Dict, Union
+import os
+from typing import Optional, Literal
 
 from app import JsonData
 
 
 def json_wr(
-        file_path: str,
-        data: Optional[JsonData] = None,
-        if_none: Optional[Union[Dict, List]] = None
+    filename: str,
+    mode: Literal["r", "w"] = "r",
+    data=None
 ) -> Optional[JsonData]:
+    """Write and read json files.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the file. It opens the file like "app/" + filename + ".json".
+    mode : "r", "w", default="r"
+        Action to perform in the file.
+        "r" to load data, "w" to write in the file.
+    data : JsonData, optional, default={}
+        Data to write in the file if you're in "w" mode.
+
+    Returns
+    -------
+    JsonData, optional
+        Data of the file or default one if the mode is "r".
+        Nothing if the mode is "w".
     """
-    Read json data or write given data with given file path.
+    if data is None:
+        data = {}
 
-    file_path: path of the file to write inside
-    data: data to write inside the file (optional)
-    if_none: if you're trying to read the file and it does not exist
-             it will return this
-    """
-    open_mode = 'r' if data is None else 'w+'
-    exists = True
-    if not path.exists(f'app/{file_path}.json'):
-        exists = False
-        open_mode = 'w+'
+    filename = f"app/{filename}.json"
 
-    with open(
-            f"app/{file_path}.json",
-            open_mode
-    ) as json_file:
+    if mode == "r":
+        if not os.path.isfile(filename):
+            return data
+        try:
+            with open(filename) as f:
+                return json.load(f)
+        except json.decoder.JSONDecodeError:
+            with open(filename, "w") as f:
+                json.dump(data, f, indent=4)
+            return {}
 
-        if exists:
-            if data is None:
-                return json.load(json_file)
-
-            json.dump(data, json_file, indent=4)
-            return
-
-        if if_none is None:
-            json.dump(data, json_file, indent=4)
-            return
-        return if_none
+    elif mode == "w":
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=4)
+    return
