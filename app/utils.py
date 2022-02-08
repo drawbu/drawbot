@@ -41,7 +41,7 @@ def json_wr(
                 return json.load(f)
         except json.decoder.JSONDecodeError as e:
             print(f"An error occurred while reading {filename}: {e}")
-            if e == "Expecting value: line 1 column 1 (char 0)":
+            if e.args[0] == "Expecting value: line 1 column 1 (char 0)":
                 with open(filename, "w") as f:
                     json.dump(data, f, indent=4)
             return {}
