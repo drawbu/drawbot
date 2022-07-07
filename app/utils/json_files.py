@@ -31,7 +31,7 @@ def json_wr(
     if data is None:
         data = {}
 
-    filename = f"app/{filename}.json"
+    filename = f"./app/{filename}.json"
 
     if mode == "r":
         if not os.path.isfile(filename):
