@@ -1,15 +1,12 @@
 import time
-from datetime import datetime
-from collections import defaultdict
-from typing import List, DefaultDict
 
 import discord
 import pronotepy
 from discord.ext.commands import Context
 from discord.ext import commands, tasks
 
-from app import JsonData, JsonDict
-from app.utils import json_wr
+from app import JsonDict
+from app.utils import json_wr, fetch_homeworks
 
 
 class Pronote(commands.Cog):
@@ -26,11 +23,6 @@ class Pronote(commands.Cog):
     async def refresh_pronote(self) -> None:
 
         date = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
-
-        # Does not work at night
-        hour = datetime.now().hour
-        if hour > 22 or hour < 5:
-            return
 
         try:
             pronote: pronotepy.Client = pronotepy.Client(
@@ -55,22 +47,6 @@ class Pronote(commands.Cog):
             print(f"{date} - Connexion à Pronote échoué")
             return
 
-        fetched_homeworks: List[pronote.homework] = pronote.homework(
-            pronote.start_day
-        )
-
-        homeworks_file: JsonData = json_wr("devoirs")
-
-        homeworks: DefaultDict[str, List[pronote.homework]] = defaultdict(list)
-
-        for homework in fetched_homeworks:
-            homeworks[str(homework.date)].append(
-                {
-                    "subject": homework.subject.name,
-                    "description": homework.description.replace("\n", " ")
-                }
-            )
-
         try:
             pronote_channel: discord.TextChannel = (
                 await self.client.fetch_channel(
@@ -82,57 +58,17 @@ class Pronote(commands.Cog):
             await self.client.close()
             return
 
-        if homeworks_file == {} or isinstance(homeworks_file, list):
-            json_wr("devoirs", "w", homeworks)
-            print("La première connexion aux serveurs de PRONOTE à été un "
-                  "succès, les prochains devoirs seront envoyés ici.")
-            await pronote_channel.send(
-                embed=discord.Embed(
-                    title="Première connexion réussie",
-                    description=(
-                        "La connexion aux serveurs de PRONOTE à été un succès, "
-                        "les prochains devoirs seront envoyés ici."
-                    ),
-                    color=0x1E744F
-                )
-            )
-            return
-
-        if homeworks == homeworks_file:
-            print(f"{date} - Aucun nouveau devoir trouvé.")
-            return
-
-        json_wr("devoirs", "w", homeworks)
-
-        homeworks_list: list = []
-        for key, value in homeworks.items():
-            for i in value:
-                i["date"] = key
-            homeworks_list.extend(value)
-
-        homeworks_old_list: list = []
-        for key, value in homeworks_file.items():
-            for i in value:
-                i["date"] = key
-            homeworks_old_list.extend(value)
+        def discord_timestamp(t_str: str) -> str:
+            return f"<t:{int(time.mktime(time.strptime(t_str, '%Y-%m-%d')))}:D>"
 
         new_homework_count = 0
-
-        for homework in homeworks_list:
-            if homework in homeworks_old_list:
-                continue
-
+        for homework in fetch_homeworks(pronote):
             new_homework_count += 1
-
-            time_marker: int = int(
-                time.mktime(time.strptime(homework["date"], "%Y-%m-%d"))
-            )
-
             await pronote_channel.send(
                 embed=discord.Embed(
                     title=(
                         f"{homework['subject']}\n"
-                        f"Pour le <t:{time_marker}:D>"
+                        f"Pour le {discord_timestamp(homework['date'])}"
                     ),
                     description=homework["description"],
                     color=0x1E744F
