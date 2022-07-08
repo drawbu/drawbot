@@ -37,6 +37,7 @@ The bot will create **2** json files in the **app** folder:
 
 -   config.json
 -   devoirs.json
+-   grades.json
 
 ### app/ config.json
 
