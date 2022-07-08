@@ -3,5 +3,6 @@ venv
 app/pronote.json
 app/config.json
 app/devoirs.json
+app/grades.json
 __pycache__
 /desktop.ini

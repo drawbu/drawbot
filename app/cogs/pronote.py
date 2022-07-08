@@ -6,7 +6,7 @@ from discord.ext.commands import Context
 from discord.ext import commands, tasks
 
 from app import JsonDict
-from app.utils import json_wr, fetch_homeworks
+from app.utils import json_wr, fetch_homeworks, fetch_grades
 
 
 class Pronote(commands.Cog):
@@ -61,20 +61,53 @@ class Pronote(commands.Cog):
         def discord_timestamp(t_str: str) -> str:
             return f"<t:{int(time.mktime(time.strptime(t_str, '%Y-%m-%d')))}:D>"
 
-        new_homework_count = 0
-        for homework in fetch_homeworks(pronote):
-            new_homework_count += 1
-            await pronote_channel.send(
-                embed=discord.Embed(
-                    title=(
-                        f"{homework['subject']}\n"
-                        f"Pour le {discord_timestamp(homework['date'])}"
-                    ),
-                    description=homework["description"],
-                    color=0x1E744F
+        auths = {"homeworks": True, "grades": True}
+
+        if auths["homeworks"]:
+            new_homework_count = 0
+            for homework in fetch_homeworks(pronote):
+                new_homework_count += 1
+                await pronote_channel.send(
+                    embed=discord.Embed(
+                        title=(
+                            f"Nouveau devoir de {homework['subject']}\n"
+                            f"Pour le {discord_timestamp(homework['date'])}"
+                        ),
+                        description=homework["description"],
+                        color=0x1E744F
+                    )
                 )
-            )
-        print(f"{date} - {new_homework_count} nouveaux devoirs !")
+
+        if auths["grades"]:
+            new_grades_count = 0
+            for grade in fetch_grades(pronote):
+                new_grades_count += 1
+                await pronote_channel.send(
+                    embed=discord.Embed(
+                        title=(
+                            f"Nouvelle note de {grade['subject']}\n"
+                            f"Du {discord_timestamp(grade['date'])}"
+                        ),
+                        description=(
+                            f"Note élève : **{grade['grade']}**\n"
+                            f"Moy. classe : **{grade['average']}**\n"
+                            f"Coefficient : **{grade['coefficient']}**\n"
+                            f"Note + : **{grade['max']}**\n"
+                            f"Note - : **{grade['min']}**\n"
+                        ),
+                        color=0x1E744F
+                    )
+                )
+
+        print(
+            (date if any(auths) else "") + (
+                '' if not auths["homeworks"]
+                else f" - {new_homework_count} nouveaux devoirs"
+            ) + (
+                '' if not auths["grades"]
+                else f" - {new_grades_count} nouveaux notes"
+            ) + (" !" if any(auths) else "")
+        )
 
     @commands.command(name="homeworks", aliases=("devoirs",))
     async def change_channel(self, ctx: Context) -> None:
