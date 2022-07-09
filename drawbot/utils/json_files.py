@@ -1,8 +1,10 @@
 import json
 import os
-from typing import Optional, Literal
+from typing import Dict, Any, List, Union, Optional, Literal
 
-from ..json_types import JsonData
+JsonDict = Dict[str, Any]
+JsonList = List[Any]
+JsonData = Union[JsonDict, JsonList]
 
 
 def json_wr(

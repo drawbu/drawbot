@@ -1,7 +1,7 @@
 from typing import DefaultDict, Generator, Optional
 from collections import defaultdict
 
-from ..json_types import JsonData
+from .json_files import JsonData
 from ..utils import json_wr
 import pronotepy
 

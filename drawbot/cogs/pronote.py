@@ -5,8 +5,7 @@ import pronotepy
 from discord.ext.commands import Context
 from discord.ext import commands, tasks
 
-from ..json_types import JsonDict
-from ..utils import json_wr, fetch_homeworks, fetch_grades
+from ..utils import json_wr, fetch_homeworks, fetch_grades, JsonDict
 
 
 class Pronote(commands.Cog):

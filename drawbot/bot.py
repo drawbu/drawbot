@@ -5,8 +5,7 @@ from typing import Optional
 from discord import LoginFailure
 from discord.ext import commands
 
-from .json_types import JsonData
-from .utils import json_wr
+from .utils import json_wr, JsonData
 
 
 class Bot(commands.Bot):
