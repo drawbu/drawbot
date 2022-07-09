@@ -21,25 +21,25 @@ Help server: https://discord.gg/XGXydQyKhQ
 ```sh
 git clone https://github.com/drawbu/drawbot
 
-cd /path
+cd drawbot
 
 pip install -r requirements.txt
 ```
 
 ## Launch
 ```sh
-py run.py
+py drawbot
 ```
 
 ## Files documentation
 
-The bot will create **2** json files in the **app** folder:
+The bot will create **2** json files in the **vars** folder:
 
 -   config.json
 -   devoirs.json
 -   grades.json
 
-### app/ config.json
+### vars/ config.json
 
 This file stocks your private logins and info's to make to bor running:
 
@@ -66,5 +66,5 @@ If you can't connect to Pronote, check if your establishment is not using an
 ENT. In this case, see what you need to do with the help of the pronote wrapper 
 project: [pronotepy](https://github.com/bain3/pronotepy)
 
-### app/ devoirs.json
+### vars/ devoirs.json
 Automatically generated JSON containing homeworks information.
