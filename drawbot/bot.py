@@ -10,7 +10,6 @@ from .utils import json_wr
 
 
 class Bot(commands.Bot):
-
     def __init__(self):
         """Initialize the bot and load config for token and prefix."""
         self.embed_color: int = 0x1E744F
@@ -22,7 +21,7 @@ class Bot(commands.Bot):
             "channelID": "",
             "username": "",
             "password": "",
-            "url": ""
+            "url": "",
         }
 
         self.config: JsonData = json_wr("config")
@@ -30,7 +29,7 @@ class Bot(commands.Bot):
         for key in default_config.keys():
             if self.config.get(key, "") == "":
                 print(
-                    f"Veuillez indiquer remplir la valeur \"{key}\" "
+                    f'Veuillez indiquer remplir la valeur "{key}" '
                     "dans le fichier vars/config.json"
                 )
                 sys.exit()

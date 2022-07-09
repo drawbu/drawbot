@@ -6,9 +6,7 @@ from ..json_types import JsonData
 
 
 def json_wr(
-    filename: str,
-    mode: Literal["r", "w"] = "r",
-    data=None
+    filename: str, mode: Literal["r", "w"] = "r", data=None
 ) -> Optional[JsonData]:
     """Write and read json files.
 

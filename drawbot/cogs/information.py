@@ -9,13 +9,13 @@ from ..utils import json_wr
 
 
 class Information(commands.Cog):
-
     def __init__(self, client):
         """Initialize the different commands."""
         self.client = client
 
     @commands.command(
-        name='help', aliases=('h', 'aide'),
+        name="help",
+        aliases=("h", "aide"),
     )
     async def help_command(self, ctx: Context):
         help_embed: Embed = discord.Embed(
@@ -24,21 +24,22 @@ class Information(commands.Cog):
                 "Un bot qui traque vos devoir pronote "
                 "et vous les notifient sur discord."
             ),
-            color=self.client.embed_color
+            color=self.client.embed_color,
         ).add_field(
-            name=f'{ctx.prefix}here',
-            value='change le salon d \'envoi des nouveaux devoirs'
+            name=f"{ctx.prefix}here",
+            value="change le salon d 'envoi des nouveaux devoirs",
         )
 
         await ctx.send(embed=help_embed)
 
     @commands.command(
-        name='channel', aliases=('here',),
+        name="channel",
+        aliases=("here",),
     )
     async def change_channel(self, ctx: Context):
-        pronote_config: JsonDict = json_wr('pronote')
-        pronote_config['channelID'] = ctx.channel.id
-        json_wr('pronote', data=pronote_config)
+        pronote_config: JsonDict = json_wr("pronote")
+        pronote_config["channelID"] = ctx.channel.id
+        json_wr("pronote", data=pronote_config)
 
         await ctx.send(
             embed=discord.Embed(
@@ -47,7 +48,7 @@ class Information(commands.Cog):
                     "Le salon pour envoyer les nouveaux devoirs "
                     "à bien été mis à jour"
                 ),
-                color=self.client.embed_color
+                color=self.client.embed_color,
             )
         )
 

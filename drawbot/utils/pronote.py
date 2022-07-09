@@ -14,7 +14,7 @@ def fetch_homeworks(pronote_client: pronotepy.Client) -> Optional[Generator]:
         homeworks[str(homework.date)].append(
             {
                 "subject": homework.subject.name,
-                "description": homework.description.replace("\n", " ")
+                "description": homework.description.replace("\n", " "),
             }
         )
 
@@ -34,7 +34,7 @@ def fetch_grades(pronote_client: pronotepy.Client) -> Optional[Generator]:
                 "average": f"{g.average}/{g.out_of}",
                 "coefficient": f"{g.coefficient}",
                 "max": f"{g.max}/{g.out_of}",
-                "min": f"{g.min}/{g.out_of}"
+                "min": f"{g.min}/{g.out_of}",
             }
         )
 

@@ -10,7 +10,6 @@ from ..utils import json_wr, fetch_homeworks, fetch_grades
 
 
 class Pronote(commands.Cog):
-
     def __init__(self, client):
         """Initialize the search for new homeworks."""
         self.client = client
@@ -28,7 +27,7 @@ class Pronote(commands.Cog):
             pronote: pronotepy.Client = pronotepy.Client(
                 self.client.config["url"],
                 self.client.config["username"],
-                self.client.config["password"]
+                self.client.config["password"],
             )
 
         except pronotepy.CryptoError:
@@ -48,10 +47,8 @@ class Pronote(commands.Cog):
             return
 
         try:
-            pronote_channel: discord.TextChannel = (
-                await self.client.fetch_channel(
-                    int(self.client.config.get("channelID"))
-                )
+            pronote_channel: discord.TextChannel = await self.client.fetch_channel(
+                int(self.client.config.get("channelID"))
             )
         except discord.errors.NotFound:
             print("Channel non-trouvé ou inexistant")
@@ -74,7 +71,7 @@ class Pronote(commands.Cog):
                             f"Pour le {discord_timestamp(homework['date'])}"
                         ),
                         description=homework["description"],
-                        color=0x1E744F
+                        color=0x1E744F,
                     )
                 )
 
@@ -95,28 +92,26 @@ class Pronote(commands.Cog):
                             f"Note + : **{grade['max']}**\n"
                             f"Note - : **{grade['min']}**\n"
                         ),
-                        color=0x1E744F
+                        color=0x1E744F,
                     )
                 )
 
         print(
-            (date if any(auths) else "") + (
-                '' if not auths["homeworks"]
+            (date if any(auths) else "")
+            + (
+                ""
+                if not auths["homeworks"]
                 else f" - {new_homework_count} nouveaux devoirs"
-            ) + (
-                '' if not auths["grades"]
-                else f" - {new_grades_count} nouveaux notes"
-            ) + (" !" if any(auths) else "")
+            )
+            + ("" if not auths["grades"] else f" - {new_grades_count} nouveaux notes")
+            + (" !" if any(auths) else "")
         )
 
     @commands.command(name="homeworks", aliases=("devoirs",))
     async def change_channel(self, ctx: Context) -> None:
         homeworks: JsonDict = json_wr("devoirs")
 
-        embed = discord.Embed(
-            title="Prochains devoirs",
-            color=self.client.embed_color
-        )
+        embed = discord.Embed(title="Prochains devoirs", color=self.client.embed_color)
 
         today = time.time()
         homeworks_dict = {}
@@ -126,19 +121,18 @@ class Pronote(commands.Cog):
             if date_timestamp >= today:
                 homeworks_dict[date_timestamp] = homeworks_list
 
-        homeworks_dict = {
-            key: homeworks_dict[key]
-            for key in sorted(homeworks_dict)
-        }
+        homeworks_dict = {key: homeworks_dict[key] for key in sorted(homeworks_dict)}
 
         for date, homeworks_list in homeworks_dict.items():
             embed.add_field(
                 name=f"Pour le <t:{date}:D>",
-                value="\n".join([
-                    f"**- {h['subject']} :** {h['description']}"
-                    for h in homeworks_list
-                ]),
-                inline=False
+                value="\n".join(
+                    [
+                        f"**- {h['subject']} :** {h['description']}"
+                        for h in homeworks_list
+                    ]
+                ),
+                inline=False,
             )
 
         await ctx.send(embed=embed)
