@@ -2,7 +2,7 @@ import json
 import os
 from typing import Optional, Literal
 
-from app import JsonData
+from drawbot import JsonData
 
 
 def json_wr(
@@ -15,7 +15,7 @@ def json_wr(
     Parameters
     ----------
     filename : str
-        Name of the file. It opens the file like "app/" + filename + ".json".
+        Name of the file. It opens the file like "drawbot/" + filename + ".json".
     mode : "r", "w", default="r"
         Action to perform in the file.
         "r" to load data, "w" to write in the file.
@@ -31,7 +31,7 @@ def json_wr(
     if data is None:
         data = {}
 
-    filename = f"./app/{filename}.json"
+    filename = f"./drawbot/{filename}.json"
 
     if mode == "r":
         if not os.path.isfile(filename):

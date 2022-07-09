@@ -4,9 +4,9 @@ from discord.ext import commands
 
 from discord.ext.commands import Context
 
-from app import JsonDict
+from drawbot import JsonDict
 
-from app.utils import json_wr
+from drawbot.utils import json_wr
 
 
 class Informations(commands.Cog):

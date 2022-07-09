@@ -4,8 +4,8 @@ from typing import Optional
 
 from discord.ext import commands
 
-from app import JsonData
-from app.utils import json_wr
+from drawbot import JsonData
+from drawbot.utils import json_wr
 
 
 class Bot(commands.Bot):
@@ -40,9 +40,9 @@ class Bot(commands.Bot):
 
         self.remove_command("help")
 
-        for filename in os.listdir("app/cogs"):
+        for filename in os.listdir("drawbot/cogs"):
             if filename.endswith(".py"):
-                self.load_extension(f"app.cogs.{filename[:-3]}")
+                self.load_extension(f"drawbot.cogs.{filename[:-3]}")
 
     def run(self) -> None:
         super().run(self._token)
