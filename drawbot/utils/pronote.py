@@ -49,6 +49,10 @@ def fetch_from_json(filename: str, json_data: JsonData) -> Generator:
 
     json_wr(filename, "w", json_data)
 
+    if json_file == {}:
+        print("Première exécution, le générateur ne va rien renvoyer.")
+        return
+
     json_vals: list = []
     for key, value in json_data.items():
         for i in value:
