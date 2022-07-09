@@ -1,2 +1,0 @@
-discord~=1.7.3
-pronotepy==2.4.0

@@ -1,8 +1,8 @@
 venv
 .idea
-app/pronote.json
-app/config.json
-app/devoirs.json
-app/grades.json
+drawbot/pronote.json
+
 __pycache__
 /desktop.ini
+
+*.egg-info

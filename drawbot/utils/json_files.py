@@ -1,21 +1,21 @@
 import json
 import os
-from typing import Optional, Literal
+from typing import Dict, Any, List, Union, Optional, Literal
 
-from app import JsonData
+JsonDict = Dict[str, Any]
+JsonList = List[Any]
+JsonData = Union[JsonDict, JsonList]
 
 
 def json_wr(
-    filename: str,
-    mode: Literal["r", "w"] = "r",
-    data=None
+    filename: str, mode: Literal["r", "w"] = "r", data=None
 ) -> Optional[JsonData]:
     """Write and read json files.
 
     Parameters
     ----------
     filename : str
-        Name of the file. It opens the file like "app/" + filename + ".json".
+        Name of the file. It opens the file like "drawbot/" + filename + ".json".
     mode : "r", "w", default="r"
         Action to perform in the file.
         "r" to load data, "w" to write in the file.
@@ -31,7 +31,7 @@ def json_wr(
     if data is None:
         data = {}
 
-    filename = f"./app/{filename}.json"
+    filename = f"vars/{filename}.json"
 
     if mode == "r":
         if not os.path.isfile(filename):
@@ -49,4 +49,3 @@ def json_wr(
     elif mode == "w":
         with open(filename, "w") as f:
             json.dump(data, f, indent=4)
-    return

@@ -2,15 +2,14 @@ import os
 import sys
 from typing import Optional
 
+from discord import LoginFailure
 from discord.ext import commands
 
-from app import JsonData
-from app.utils import json_wr
+from .utils import json_wr, JsonData
 
 
 class Bot(commands.Bot):
-
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize the bot and load config for token and prefix."""
         self.embed_color: int = 0x1E744F
         self._token: Optional[str] = None
@@ -21,7 +20,7 @@ class Bot(commands.Bot):
             "channelID": "",
             "username": "",
             "password": "",
-            "url": ""
+            "url": "",
         }
 
         self.config: JsonData = json_wr("config")
@@ -29,8 +28,8 @@ class Bot(commands.Bot):
         for key in default_config.keys():
             if self.config.get(key, "") == "":
                 print(
-                    f"Veuillez indiquer remplir la valeur \"{key}\" "
-                    "dans le fichier config.json"
+                    f'Veuillez indiquer remplir la valeur "{key}" '
+                    "dans le fichier vars/config.json"
                 )
                 sys.exit()
 
@@ -40,12 +39,18 @@ class Bot(commands.Bot):
 
         self.remove_command("help")
 
-        for filename in os.listdir("app/cogs"):
-            if filename.endswith(".py"):
-                self.load_extension(f"app.cogs.{filename[:-3]}")
+        for filename in os.listdir("drawbot/cogs"):
+            if filename.endswith(".py") and filename != "__init__.py":
+                self.load_extension(f"drawbot.cogs.{filename[:-3]}")
 
-    def run(self) -> None:
-        super().run(self._token)
+    def run(self):
+        try:
+            super().run(self._token)
+        except LoginFailure:
+            print(
+                "Echec de la connexion au client."
+                "Veuillez vérifier que votre token est correct."
+            )
 
-    async def on_ready(self) -> None:
+    async def on_ready(self):
         print(f"Connecté en temps que {self.user.name} !")
