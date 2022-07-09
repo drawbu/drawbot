@@ -1,3 +1,4 @@
+"""Utilities for drawbot."""
 from .json_files import json_wr, JsonData, JsonDict, JsonList
 from .pronote import fetch_homeworks, fetch_grades
 
