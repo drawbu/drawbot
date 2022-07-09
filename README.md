@@ -18,12 +18,12 @@ Help server: https://discord.gg/XGXydQyKhQ
 |  :warning:   | We do not take responsibility for a possible leak of your passwords, which is why you need to host the bot yourself. |
 
 ## Installation
+
 ```sh
 git clone https://github.com/drawbu/drawbot
-
 cd drawbot
 
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Launch
@@ -31,40 +31,32 @@ pip install -r requirements.txt
 py drawbot
 ```
 
+*If you are using a Linux distribution, you can use the `make` command to install dependencies and run the bot.*
+
 ## Files documentation
 
 The bot will create **2** json files in the **vars** folder:
 
--   config.json
 -   devoirs.json
 -   grades.json
 
-### vars/ config.json
+### vars/config.json
 
-This file stocks your private logins and info's to make to bor running:
+This file stocks your private logins and info's to make to bot running.
+You can find a **config.example.json** file in the **vars** folder.
 
-```json5
-{
-    "token": "( ͡° ͜ʖ ͡°)",
-    "prefix": "!",
-    "channelID": "000000000000000000",
-    "username": "demonstration",
-    "password": "pronotevs",
-    "url": "https://demo.index-education.net/pronote/eleve.html?login=true"
-}
-```
-THESE ARE JUST EXAMPLES
+copy that file as **config.json** and fill in the values as follows:
 
-In `"token"`, you need to add your bot token. <br>
-In `"prefix"`, the prefix your bot will use. <br>
-In `"channelID"`, the ID of the Discord channel. <br>
-In `"username"`, your Pronote username. <br>
-In `"password"`, your Pronote password. <br>
-In `"url"`, the url of your pronote client. <br>
+- `"token"`: your bot token. <br>
+- `"prefix"`: the prefix your bot will use. <br>
+- `"channelID"`: the ID of the Discord channel. <br>
+- `"username"`: your Pronote username. <br>
+- `"password"`: your Pronote password. <br>
+- `"url"`: the url of your pronote client. <br>
 
 If you can't connect to Pronote, check if your establishment is not using an 
 ENT. In this case, see what you need to do with the help of the pronote wrapper 
 project: [pronotepy](https://github.com/bain3/pronotepy)
 
-### vars/ devoirs.json
+### vars/devoirs.json
 Automatically generated JSON containing homeworks information.
