@@ -127,10 +127,7 @@ class Pronote(commands.Cog):
             embed.add_field(
                 name=f"Pour le <t:{date}:D>",
                 value="\n".join(
-                    [
-                        f"**- {h['subject']} :** {h['description']}"
-                        for h in homeworks_list
-                    ]
+                    f"**- {h['subject']} :** {h['description']}" for h in homeworks_list
                 ),
                 inline=False,
             )
