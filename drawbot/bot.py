@@ -2,6 +2,7 @@ import os
 import sys
 from typing import Optional
 
+from discord import LoginFailure
 from discord.ext import commands
 
 from .json_types import JsonData
@@ -44,8 +45,14 @@ class Bot(commands.Bot):
             if filename.endswith(".py") and filename != "__init__.py":
                 self.load_extension(f"drawbot.cogs.{filename[:-3]}")
 
-    def run(self) -> None:
-        super().run(self._token)
+    def run(self):
+        try:
+            super().run(self._token)
+        except LoginFailure:
+            print(
+                "Echec de la connexion au client."
+                "Veuillez vérifier que votre token est correct."
+            )
 
-    async def on_ready(self) -> None:
+    async def on_ready(self):
         print(f"Connecté en temps que {self.user.name} !")
