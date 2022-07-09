@@ -11,7 +11,7 @@ from .utils import json_wr
 
 class Bot(commands.Bot):
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize the bot and load config for token and prefix."""
         self.embed_color: int = 0x1E744F
         self._token: Optional[str] = None

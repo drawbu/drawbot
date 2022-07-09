@@ -8,7 +8,7 @@ from ..json_types import JsonDict
 from ..utils import json_wr
 
 
-class Informations(commands.Cog):
+class Information(commands.Cog):
 
     def __init__(self, client):
         """Initialize the different commands."""
@@ -17,7 +17,7 @@ class Informations(commands.Cog):
     @commands.command(
         name='help', aliases=('h', 'aide'),
     )
-    async def help_command(self, ctx: Context) -> None:
+    async def help_command(self, ctx: Context):
         help_embed: Embed = discord.Embed(
             title="Help of the Pronote",
             description=(
@@ -35,7 +35,7 @@ class Informations(commands.Cog):
     @commands.command(
         name='channel', aliases=('here',),
     )
-    async def change_channel(self, ctx: Context) -> None:
+    async def change_channel(self, ctx: Context):
         pronote_config: JsonDict = json_wr('pronote')
         pronote_config['channelID'] = ctx.channel.id
         json_wr('pronote', data=pronote_config)
@@ -52,5 +52,5 @@ class Informations(commands.Cog):
         )
 
 
-def setup(client) -> None:
-    client.add_cog(Informations(client))
+def setup(client):
+    client.add_cog(Information(client))

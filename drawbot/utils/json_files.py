@@ -49,4 +49,3 @@ def json_wr(
     elif mode == "w":
         with open(filename, "w") as f:
             json.dump(data, f, indent=4)
-    return

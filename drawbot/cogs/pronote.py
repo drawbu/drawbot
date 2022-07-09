@@ -16,11 +16,11 @@ class Pronote(commands.Cog):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_ready(self) -> None:
+    async def on_ready(self):
         self.refresh_pronote.start()
 
     @tasks.loop(seconds=300)
-    async def refresh_pronote(self) -> None:
+    async def refresh_pronote(self):
 
         date = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
 
@@ -144,5 +144,5 @@ class Pronote(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(client) -> None:
+def setup(client):
     client.add_cog(Pronote(client))
