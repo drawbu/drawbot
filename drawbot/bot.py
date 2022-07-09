@@ -4,8 +4,8 @@ from typing import Optional
 
 from discord.ext import commands
 
-from drawbot import JsonData
-from drawbot.utils import json_wr
+from .types import JsonData
+from .utils import json_wr
 
 
 class Bot(commands.Bot):
@@ -30,7 +30,7 @@ class Bot(commands.Bot):
             if self.config.get(key, "") == "":
                 print(
                     f"Veuillez indiquer remplir la valeur \"{key}\" "
-                    "dans le fichier config.json"
+                    "dans le fichier vars/config.json"
                 )
                 sys.exit()
 

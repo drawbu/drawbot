@@ -1,8 +1,7 @@
 from typing import DefaultDict, Generator, Optional
 from collections import defaultdict
 
-from drawbot.utils import json_wr
-
+from ..utils import json_wr
 import pronotepy
 
 

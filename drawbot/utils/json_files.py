@@ -2,7 +2,7 @@ import json
 import os
 from typing import Optional, Literal
 
-from drawbot import JsonData
+from ..types import JsonData
 
 
 def json_wr(
@@ -31,7 +31,7 @@ def json_wr(
     if data is None:
         data = {}
 
-    filename = f"./drawbot/{filename}.json"
+    filename = f"vars/{filename}.json"
 
     if mode == "r":
         if not os.path.isfile(filename):
