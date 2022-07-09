@@ -41,11 +41,11 @@ def fetch_grades(pronote_client: pronotepy.Client) -> Optional[Generator]:
     yield from fetch_from_json("grades", grades)
 
 
-def fetch_from_json(filename: str, json_data: JsonData):
+def fetch_from_json(filename: str, json_data: JsonData) -> Generator:
     json_file = json_wr(filename)
 
     if json_data == json_file:
-        yield from ()
+        return
 
     json_wr(filename, "w", json_data)
 
