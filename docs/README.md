@@ -45,6 +45,18 @@ The bot will create **2** json files in the **vars** folder:
 This file stocks your private logins and info's to make to bot running.
 You can find a **config.example.json** file in the **vars** folder.
 
+> `config.json` **Example**
+```json5
+{
+    "token": "( ͡° ͜ʖ ͡°)",
+    "prefix": "!",
+    "channelID": "000000000000000000",
+    "username": "demonstration",
+    "password": "pronotevs",
+    "url": "https://demo.index-education.net/pronote/eleve.html?login=true"
+}
+```
+
 copy that file as **config.json** and fill in the values as follows:
 
 - `"token"`: your bot token. <br>
