@@ -1,4 +1,4 @@
-from drawbot.bot import Bot
+from drawbot import Bot
 
 
 def main() -> None:
