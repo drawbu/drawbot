@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from discord.ext.commands import Context
 
-from ..types import JsonDict
+from ..json_types import JsonDict
 from ..utils import json_wr
 
 

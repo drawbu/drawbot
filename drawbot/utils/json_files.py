@@ -2,7 +2,7 @@ import json
 import os
 from typing import Optional, Literal
 
-from ..types import JsonData
+from ..json_types import JsonData
 
 
 def json_wr(
