@@ -1,11 +1,12 @@
 import time
 
+from utils import fetch_homeworks, fetch_grades
+
 import pronotepy
 import discord
 from discord.ext import commands, tasks
-from discord import app_commands, Interaction
 
-from utils import json_wr, fetch_homeworks, fetch_grades, JsonDict
+
 
 class LoopHandler(commands.Cog):
     def __init__(self, client: commands.Bot):
@@ -102,36 +103,6 @@ class LoopHandler(commands.Cog):
             + (" !" if any(auths) else "")
         )
 
-@app_commands.guild_only()
-class PronoteCommandsGroup(app_commands.Group, name="pronote"):
-    @app_commands.command(description="Donne la liste des prochains devoirs")
-    async def homeworks(self, interaction: Interaction):
-        homeworks: JsonDict = json_wr("devoirs")
-
-        embed = discord.Embed(title="Prochains devoirs", color=interaction.client.embed_color)
-
-        today = time.time()
-        homeworks_dict = {}
-        for date, homeworks_list in homeworks.items():
-
-            date_timestamp = int(time.mktime(time.strptime(date, "%Y-%m-%d")))
-            if date_timestamp >= today:
-                homeworks_dict[date_timestamp] = homeworks_list
-
-        homeworks_dict = {key: homeworks_dict[key] for key in sorted(homeworks_dict)}
-
-        for date, homeworks_list in homeworks_dict.items():
-            embed.add_field(
-                name=f"Pour le <t:{date}:D>",
-                value="\n".join(
-                    f"**- {h['subject']} :** {h['description']}" for h in homeworks_list
-                ),
-                inline=False,
-            )
-
-        await interaction.response.send_message(embed=embed)
-
 
 async def setup(client: commands.Bot) -> None:
-    client.tree.add_command(PronoteCommandsGroup())
     LoopHandler(client)
