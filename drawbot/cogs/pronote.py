@@ -94,13 +94,11 @@ class LoopHandler(commands.Cog):
                 )
 
         print(
-            (date if any(auths) else "")
-            + (
-                ""
-                if not auths["homeworks"]
-                else f" - {new_homework_count} nouveaux devoirs"
-            )
-            + ("" if not auths["grades"] else f" - {new_grades_count} nouveaux notes")
+            (date if any(auths) else "") 
+            + (f" - {new_homework_count} nouveaux devoirs" if auths["homeworks"]
+                else "") 
+            + (f" - {new_grades_count} nouveaux notes" if auths["grades"]
+                else "") 
             + (" !" if any(auths) else "")
         )
 
