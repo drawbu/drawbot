@@ -1,6 +1,6 @@
 import time
 
-from utils import fetch_homeworks, fetch_grades
+from utils import fetch_homeworks, fetch_grades, chunks
 
 import pronotepy
 import discord
@@ -57,12 +57,12 @@ class LoopHandler(commands.Cog):
 
         auths = {"homeworks": True, "grades": True}
 
-        if auths["homeworks"]:
-            new_homework_count = 0
-            for homework in fetch_homeworks(pronote):
-                new_homework_count += 1
-                await pronote_channel.send(
-                    embed=discord.Embed(
+        new_homework_count = 0
+        for homeworks in chunks(list(fetch_homeworks(pronote)), 10):
+            new_homework_count += len(homeworks)
+            await pronote_channel.send(
+                embeds=[
+                    discord.Embed(
                         title=(
                             f"Nouveau devoir de {homework['subject']}\n"
                             f"Pour le {discord_timestamp(homework['date'])}"
@@ -70,14 +70,16 @@ class LoopHandler(commands.Cog):
                         description=homework["description"],
                         color=0x1E744F,
                     )
-                )
+                    for homework in homeworks
+                ]
+            )
 
-        if auths["grades"]:
-            new_grades_count = 0
-            for grade in fetch_grades(pronote):
-                new_grades_count += 1
-                await pronote_channel.send(
-                    embed=discord.Embed(
+        new_grades_count = 0
+        for grades in chunks(list(fetch_grades(pronote)), 10):
+            new_grades_count += len(grades)
+            await pronote_channel.send(
+                embeds=[
+                    discord.Embed(
                         title=(
                             f"Nouvelle note de {grade['subject']}\n"
                             f"Du {discord_timestamp(grade['date'])}"
@@ -91,15 +93,14 @@ class LoopHandler(commands.Cog):
                         ),
                         color=0x1E744F,
                     )
-                )
+                    for grade in grades
+                ]
+            )
 
         print(
-            (date if any(auths) else "")
-            + (f" - {new_homework_count} nouveaux devoirs" if auths["homeworks"]
-                else "")
-            + (f" - {new_grades_count} nouveaux notes" if auths["grades"]
-                else "")
-            + (" !" if any(auths) else "")
+            f"{date} "
+            f"- {new_homework_count} nouveaux devoirs "
+            f"- {new_grades_count} nouvelles notes !"
         )
 
 
