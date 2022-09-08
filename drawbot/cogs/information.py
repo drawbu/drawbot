@@ -1,22 +1,15 @@
 import discord
 from discord import Embed
 from discord.ext import commands
+from discord import app_commands, Interaction
 
-from discord.ext.commands import Context
-
-from ..utils import json_wr, JsonDict
+from utils import json_wr, JsonDict
 
 
-class Information(commands.Cog):
-    def __init__(self, client):
-        """Initialize the different commands."""
-        self.client = client
-
-    @commands.command(
-        name="help",
-        aliases=("h", "aide"),
-    )
-    async def help_command(self, ctx: Context):
+@app_commands.guild_only()
+class InformationCommandsGroup(app_commands.Group, name="information"):
+    @app_commands.command(name="help")
+    async def help_command(self, interaction: Interaction):
         help_embed: Embed = discord.Embed(
             title="Help of the Pronote",
             description=(
@@ -25,22 +18,19 @@ class Information(commands.Cog):
             ),
             color=self.client.embed_color,
         ).add_field(
-            name=f"{ctx.prefix}here",
-            value="change le salon d 'envoi des nouveaux devoirs",
+            name="/here",
+            value="change le salon d'envoi des nouveaux devoirs",
         )
 
-        await ctx.send(embed=help_embed)
+        await interaction.response.send_message(embed=help_embed)
 
-    @commands.command(
-        name="channel",
-        aliases=("here",),
-    )
-    async def change_channel(self, ctx: Context):
+    @app_commands.command(name="here")
+    async def here(self, interaction: Interaction):
         pronote_config: JsonDict = json_wr("pronote")
-        pronote_config["channelID"] = ctx.channel.id
+        pronote_config["channelID"] = interaction.channel_id
         json_wr("pronote", data=pronote_config)
 
-        await ctx.send(
+        await interaction.response.send_message(
             embed=discord.Embed(
                 title="Changement de salon",
                 description=(
@@ -52,5 +42,5 @@ class Information(commands.Cog):
         )
 
 
-def setup(client):
-    client.add_cog(Information(client))
+async def setup(client: commands.Bot) -> None:
+    client.tree.add_command(InformationCommandsGroup())

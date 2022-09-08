@@ -1,25 +1,23 @@
 import time
 
-import discord
 import pronotepy
-from discord.ext.commands import Context
+import discord
 from discord.ext import commands, tasks
+from discord import app_commands, Interaction
 
 from utils import json_wr, fetch_homeworks, fetch_grades, JsonDict
 
-
-class Pronote(commands.Cog):
-    def __init__(self, client):
-        """Initialize the search for new homeworks."""
+class LoopHandler(commands.Cog):
+    def __init__(self, client: commands.Bot):
         self.client = client
-
-    @commands.Cog.listener()
-    async def on_ready(self):
         self.refresh_pronote.start()
 
-    @tasks.loop(seconds=300)
-    async def refresh_pronote(self):
+    def cog_unload(self):
+        self.refresh_pronote.cancel()
 
+    @tasks.loop(minutes=5)
+    async def refresh_pronote(self):
+        await self.client.wait_until_ready()
         date = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
 
         try:
@@ -106,11 +104,13 @@ class Pronote(commands.Cog):
             + (" !" if any(auths) else "")
         )
 
-    @commands.command(name="homeworks", aliases=("devoirs",))
-    async def change_channel(self, ctx: Context) -> None:
+@app_commands.guild_only()
+class PronoteCommandsGroup(app_commands.Group, name="pronote"):
+    @app_commands.command(description="Donne la liste des prochains devoirs")
+    async def homeworks(self, interaction: Interaction):
         homeworks: JsonDict = json_wr("devoirs")
 
-        embed = discord.Embed(title="Prochains devoirs", color=self.client.embed_color)
+        embed = discord.Embed(title="Prochains devoirs", color=interaction.client.embed_color)
 
         today = time.time()
         homeworks_dict = {}
@@ -131,8 +131,9 @@ class Pronote(commands.Cog):
                 inline=False,
             )
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
 
-def setup(client):
-    client.add_cog(Pronote(client))
+async def setup(client: commands.Bot) -> None:
+    client.tree.add_command(PronoteCommandsGroup())
+    LoopHandler(client)
