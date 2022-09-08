@@ -7,7 +7,6 @@ import discord
 from discord.ext import commands, tasks
 
 
-
 class LoopHandler(commands.Cog):
     def __init__(self, client: commands.Bot):
         self.client = client
@@ -95,11 +94,11 @@ class LoopHandler(commands.Cog):
                 )
 
         print(
-            (date if any(auths) else "") 
+            (date if any(auths) else "")
             + (f" - {new_homework_count} nouveaux devoirs" if auths["homeworks"]
-                else "") 
+                else "")
             + (f" - {new_grades_count} nouveaux notes" if auths["grades"]
-                else "") 
+                else "")
             + (" !" if any(auths) else "")
         )
 

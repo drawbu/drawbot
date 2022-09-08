@@ -3,7 +3,6 @@ import time
 from utils import json_wr, JsonDict
 
 import discord
-from discord import Embed
 from discord.ext import commands
 from discord import app_commands, Interaction
 
@@ -25,8 +24,8 @@ class PronoteCommandsGroup(app_commands.Group, name="pronote"):
                 value="Affiche ce message",
             ).add_field(
                 name="/pronote here",
-                value=("Change le salon d'envoi des nouveaux messages pour "
-                       "pronote (nouveaux devoirs et notes)"),
+                value=("Change le salon d'envoi des nouveaux messages "
+                       "pour pronote (nouveaux devoirs et notes)"),
             ).add_field(
                 name="/pronote incoming",
                 value="Affiche les prochains devoirs",
@@ -54,7 +53,10 @@ class PronoteCommandsGroup(app_commands.Group, name="pronote"):
     async def incoming(self, interaction: Interaction):
         homeworks: JsonDict = json_wr("devoirs")
 
-        embed = discord.Embed(title="Prochains devoirs", color=interaction.client.embed_color)
+        embed = discord.Embed(
+            title="Prochains devoirs",
+            color=interaction.client.embed_color
+        )
 
         today = time.time()
         homeworks_dict = {}
@@ -64,18 +66,23 @@ class PronoteCommandsGroup(app_commands.Group, name="pronote"):
             if date_timestamp >= today:
                 homeworks_dict[date_timestamp] = homeworks_list
 
-        homeworks_dict = {key: homeworks_dict[key] for key in sorted(homeworks_dict)}
+        homeworks_dict = {
+            key: homeworks_dict[key]
+            for key in sorted(homeworks_dict)
+        }
 
         for date, homeworks_list in homeworks_dict.items():
             embed.add_field(
                 name=f"Pour le <t:{date}:D>",
                 value="\n".join(
-                    f"**- {h['subject']} :** {h['description']}" for h in homeworks_list
+                    f"**- {h['subject']} :** {h['description']}"
+                    for h in homeworks_list
                 ),
                 inline=False,
             )
 
         await interaction.response.send_message(embed=embed)
+
 
 async def setup(client: commands.Bot) -> None:
     client.tree.add_command(PronoteCommandsGroup())

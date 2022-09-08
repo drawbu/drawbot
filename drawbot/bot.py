@@ -56,7 +56,7 @@ class Bot(commands.Bot):
     async def on_ready(self):
         await self.load_cogs()
         print(f"Connecté en temps que {self.user.name} !")
-    
+
     async def load_cogs(self):
         for command in self.tree.get_commands():
             await self.unload_extension(command.name)
