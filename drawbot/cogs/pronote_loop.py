@@ -55,8 +55,6 @@ class LoopHandler(commands.Cog):
         def discord_timestamp(t_str: str) -> str:
             return f"<t:{int(time.mktime(time.strptime(t_str, '%Y-%m-%d')))}:D>"
 
-        auths = {"homeworks": True, "grades": True}
-
         new_homework_count = 0
         for homeworks in chunks(list(fetch_homeworks(pronote)), 10):
             new_homework_count += len(homeworks)
