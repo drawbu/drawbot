@@ -40,9 +40,9 @@ class Bot(commands.Bot):
 
         self.remove_command("help")
 
-    def run(self, **kwargs):
+    def run(self):
         try:
-            super().run(self._token, **kwargs)
+            super().run(self._token)
         except LoginFailure:
             print(
                 "Echec de la connexion au client."
@@ -58,13 +58,8 @@ class Bot(commands.Bot):
             await self.unload_extension(command.name)
 
         for filename in os.listdir("drawbot/cogs"):
-            if filename.startswith('_') or not filename.endswith('.py'):
-                continue
-
-            await self.load_extension(f"drawbot.cogs.{filename[:-3]}")
-            print(
-                f" -> Loaded extension "
-                f"{Fore.BLUE}{Style.BRIGHT}{filename}{Style.RESET_ALL}"
-            )
-
+            if filename.endswith(".py"):
+                await self.load_extension(f"cogs.{filename[:-3]}")
+                print(f" -> Loaded extension "
+                      f"{Fore.BLUE}{Style.BRIGHT}{filename}{Style.RESET_ALL}")
         await self.tree.sync()
