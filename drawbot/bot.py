@@ -40,9 +40,9 @@ class Bot(commands.Bot):
 
         self.remove_command("help")
 
-    def run(self):
+    def run(self, **kwargs):
         try:
-            super().run(self._token)
+            super().run(self._token, **kwargs)
         except LoginFailure:
             print(
                 "Echec de la connexion au client."
