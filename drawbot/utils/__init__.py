@@ -1,6 +1,6 @@
 """Utilities for drawbot."""
 from .json_files import json_wr, JsonData, JsonDict, JsonList
-from .pronote import fetch_homeworks, fetch_grades
+from .pronote import fetch_homeworks, fetch_grades, chunks
 
 __all__ = (
     "json_wr",
@@ -9,4 +9,5 @@ __all__ = (
     "JsonData",
     "JsonDict",
     "JsonList",
+    "chunks"
 )

@@ -62,8 +62,13 @@ class Bot(commands.Bot):
             await self.unload_extension(command.name)
 
         for filename in os.listdir("drawbot/cogs"):
-            if filename.endswith(".py"):
-                await self.load_extension(f"cogs.{filename[:-3]}")
-                print(f" -> Loaded extension "
-                      f"{Fore.BLUE}{Style.BRIGHT}{filename}{Style.RESET_ALL}")
+            if filename.startswith('_') or not filename.endswith('.py'):
+                continue
+
+            await self.load_extension(f"drawbot.cogs.{filename[:-3]}")
+            print(
+                f" -> Loaded extension "
+                f"{Fore.BLUE}{Style.BRIGHT}{filename}{Style.RESET_ALL}"
+            )
+
         await self.tree.sync()

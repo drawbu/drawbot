@@ -1,10 +1,10 @@
 import time
 
-from utils import fetch_homeworks, fetch_grades, chunks
-
-import pronotepy
 import discord
+import pronotepy
 from discord.ext import commands, tasks
+
+from ..utils import fetch_homeworks, fetch_grades, chunks
 
 
 class LoopHandler(commands.Cog):

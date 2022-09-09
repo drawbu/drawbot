@@ -1,9 +1,9 @@
-from typing import DefaultDict, Generator, Optional
 from collections import defaultdict
+from typing import DefaultDict, Generator, Optional
 
-from .json_files import JsonData
-from utils import json_wr
 import pronotepy
+
+from .json_files import JsonData, json_wr
 
 
 def fetch_homeworks(pronote_client: pronotepy.Client) -> Optional[Generator]:
