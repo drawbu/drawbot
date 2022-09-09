@@ -40,13 +40,9 @@ class Bot(commands.Bot):
 
         self.remove_command("help")
 
-        for filename in os.listdir("drawbot/cogs"):
-            if filename.endswith(".py") and filename != "__init__.py":
-                self.load_extension(f"drawbot.cogs.{filename[:-3]}")
-
-    def run(self):
+    def run(self, **kwargs):
         try:
-            super().run(self._token)
+            super().run(self._token, **kwargs)
         except LoginFailure:
             print(
                 "Echec de la connexion au client."
