@@ -1,9 +1,9 @@
-from typing import DefaultDict, Generator, Optional
 from collections import defaultdict
+from typing import DefaultDict, Generator, Optional
 
-from .json_files import JsonData
-from utils import json_wr
 import pronotepy
+
+from .json_files import JsonData, json_wr
 
 
 def fetch_homeworks(pronote_client: pronotepy.Client) -> Optional[Generator]:
@@ -70,3 +70,9 @@ def fetch_from_json(filename: str, json_data: JsonData) -> Generator:
             continue
 
         yield value
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
