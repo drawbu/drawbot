@@ -4,7 +4,7 @@ import discord
 from discord import app_commands, Interaction
 from discord.ext import commands
 
-from utils import json_wr, JsonDict
+from drawbot.utils import json_wr, JsonDict
 
 
 @app_commands.guild_only()
