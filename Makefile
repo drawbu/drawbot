@@ -17,7 +17,7 @@ vars/config.json:
 
 
 start: $(V_BIN)/python vars/config.json
-	python3 drawbot
+	$(VENV)/bin/python3 drawbot
 
 
 clean:
