@@ -4,6 +4,7 @@ from typing import Optional
 
 from discord import LoginFailure, Intents
 from discord.ext import commands
+from discord.ext.commands import NoEntryPointError
 from colorama import Fore, Style
 
 from .utils import json_wr, JsonData
@@ -59,7 +60,11 @@ class Bot(commands.Bot):
 
         for filename in os.listdir("drawbot/cogs"):
             if filename.endswith(".py"):
-                await self.load_extension(f"cogs.{filename[:-3]}")
-                print(f" -> Loaded extension "
-                      f"{Fore.BLUE}{Style.BRIGHT}{filename}{Style.RESET_ALL}")
+                try:
+                    await self.load_extension(f"cogs.{filename[:-3]}")
+                    print(f" -> Loaded extension {Fore.BLUE}{Style.BRIGHT}"
+                          f"{filename}{Style.RESET_ALL}")
+                except NoEntryPointError:
+                    print(f"-> {filename} was not loaded because there was"
+                          "no setup() function.")
         await self.tree.sync()
