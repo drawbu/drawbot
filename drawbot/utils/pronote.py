@@ -22,7 +22,7 @@ def fetch_homeworks(pronote_client: pronotepy.Client) -> Optional[Generator]:
 
 
 def fetch_grades(pronote_client: pronotepy.Client) -> Optional[Generator]:
-    fetched_grades = pronote_client.periods[0].grades
+    fetched_grades = pronote_client.current_period.grades
 
     grades: DefaultDict[str, list] = defaultdict(list)
     for g in fetched_grades:

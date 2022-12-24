@@ -52,7 +52,6 @@ You can find a **config.example.json** file in the **vars** folder.
 ```json5
 {
     token: "( ͡° ͜ʖ ͡°)",
-    prefix: "!",
     channelID: "000000000000000000",
     username: "demonstration",
     password: "pronotevs",
