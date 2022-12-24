@@ -12,7 +12,9 @@
 
 A Pronote notifier discord bot.
 
-Help server: https://discord.gg/XGXydQyKhQ
+We now have a Discord sever! You can join it if you have some questions,
+some issues or just want to talk about the bot.
+[Click here to join](https://discord.gg/XGXydQyKhQ)
 
 | :bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote                            |
 |:----------:|:-------------------------------------------------------------------------------------------------------------------------|
