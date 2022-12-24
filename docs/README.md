@@ -14,9 +14,9 @@ A Pronote notifier discord bot.
 
 Help server: https://discord.gg/XGXydQyKhQ
 
-| :bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote                        |
-| :--------: | :------------------------------------------------------------------------------------------------------------------- |
-| :warning:  | We do not take responsibility for a possible leak of your passwords, which is why you need to host the bot yourself. |
+| :bangbang: | Don't try with a wrong username or password too many time, or you can get banned from Pronote                            |
+|:----------:|:-------------------------------------------------------------------------------------------------------------------------|
+| :warning:  | We do not take responsibility for a possible leak of your passwords, which is why **you need to host the bot yourself.** |
 
 ## Installation
 
@@ -39,8 +39,9 @@ _If you are using a Linux distribution or macOS, you can use the `make` command 
 
 The bot will create **3** json files in the **vars** folder:
 
--   devoirs.json
--   grades.json
+- devoirs.json
+- grades.json
+- config.json
 
 ### vars/config.json
 
@@ -61,12 +62,11 @@ You can find a **config.example.json** file in the **vars** folder.
 
 copy that file as **config.json** and fill in the values as follows:
 
--   `"token"`: your bot token. <br>
--   `"prefix"`: the prefix your bot will use. <br>
--   `"channelID"`: the ID of the Discord channel. <br>
--   `"username"`: your Pronote username. <br>
--   `"password"`: your Pronote password. <br>
--   `"url"`: the url of your pronote client. <br>
+- `"token"`: your bot token. <br>
+- `"channelID"`: the ID of the Discord channel. <br>
+- `"username"`: your Pronote username. <br>
+- `"password"`: your Pronote password. <br>
+- `"url"`: the url of your pronote client. <br>
 
 If you can't connect to Pronote, check if your establishment is not using an
 ENT. In this case, see what you need to do with the help of the pronote wrapper
