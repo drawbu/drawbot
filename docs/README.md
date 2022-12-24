@@ -18,6 +18,11 @@ Help server: https://discord.gg/XGXydQyKhQ
 |:----------:|:-------------------------------------------------------------------------------------------------------------------------|
 | :warning:  | We do not take responsibility for a possible leak of your passwords, which is why **you need to host the bot yourself.** |
 
+## Some screenshots
+
+![Homework message](assets/homework-message.png)
+![Grade message](assets/grade-message.png)
+
 ## Installation
 
 ```sh
