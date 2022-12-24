@@ -18,7 +18,6 @@ class Bot(commands.Bot):
 
         default_config: JsonData = {
             "token": "",
-            "prefix": "!",
             "channelID": "",
             "username": "",
             "password": "",
