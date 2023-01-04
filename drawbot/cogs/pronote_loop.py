@@ -56,10 +56,17 @@ class LoopHandler(commands.Cog):
         def discord_timestamp(t_str: str) -> str:
             return f"<t:{int(time.mktime(time.strptime(t_str, '%Y-%m-%d')))}:D>"
 
+        ping = (
+            f"\n||{self.client.config['ping']}||"
+            if self.client.config.get("ping")
+            else ""
+        )
+
         new_homework_count = 0
         for homeworks in chunks(list(fetch_homeworks(pronote)), 10):
             new_homework_count += len(homeworks)
             await pronote_channel.send(
+                content=ping,
                 embeds=[
                     discord.Embed(
                         title=(
@@ -77,6 +84,7 @@ class LoopHandler(commands.Cog):
         for grades in chunks(list(fetch_grades(pronote)), 10):
             new_grades_count += len(grades)
             await pronote_channel.send(
+                content=ping,
                 embeds=[
                     discord.Embed(
                         title=(

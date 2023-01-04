@@ -4,5 +4,6 @@
     "channelID": "000000000000000000",
     "username": "demonstration",
     "password": "pronotevs",
-    "url": "https://demo.index-education.net/pronote/eleve.html?login=true"
+    "url": "https://demo.index-education.net/pronote/eleve.html?login=true",
+    "ping": "<@000000000000000000>"
 }

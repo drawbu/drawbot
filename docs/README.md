@@ -64,6 +64,7 @@ You can find a **config.example.json** file in the **vars** folder.
     username: "demonstration",
     password: "pronotevs",
     url: "https://demo.index-education.net/pronote/eleve.html?login=true",
+    ping: "<@000000000000000000>"
 }
 ```
 
@@ -74,6 +75,10 @@ copy that file as **config.json** and fill in the values as follows:
 - `"username"`: your Pronote username. <br>
 - `"password"`: your Pronote password. <br>
 - `"url"`: the url of your pronote client. <br>
+- `"ping"`: the ping you want to send with the message.
+  It can be a discord user, a role, multiple mentions...
+  Note that mentions should keep discord mentions style
+  (`<@user_id>` or/and `<@&role_id>`) <br>
 
 If you can't connect to Pronote, check if your establishment is not using an
 ENT. In this case, see what you need to do with the help of the pronote wrapper
