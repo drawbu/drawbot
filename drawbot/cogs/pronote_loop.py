@@ -1,3 +1,4 @@
+import datetime
 import time
 
 import discord
@@ -18,7 +19,7 @@ class LoopHandler(commands.Cog):
     @tasks.loop(minutes=5)
     async def refresh_pronote(self):
         await self.client.wait_until_ready()
-        date = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
+        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         try:
             pronote: pronotepy.Client = pronotepy.Client(
