@@ -1,34 +1,40 @@
-VENV = venv
-V_BIN = $(VENV)/bin
+SRC_DIR := drawbot
+CONF := vars/config.json
 
-all: start
+PY_ENV := venv
+PY_BIN := $(PY_ENV)/bin
 
+PIP := $(PY_BIN)/pip
 
-$(V_BIN)/python:
-	python3 -m venv venv
-	chmod +x $(V_BIN)/activate
-	./$(V_BIN)/activate
+CMD_NOT_FOUND = $(error $(strip $(1)) is required for this rule)
+CHECK_CMD = $(if $(shell command -v $(1)),, $(call CMD_NOT_FOUND, $(1)))
 
-	$(V_BIN)/pip install -e .
+all: $(PY_BIN)/drawbot $(CONF)
 
+$(CONF):
+	@ cp vars/config.json.example vars/config.json
 
-vars/config.json:
-	cp vars/config.json.example vars/config.json
+$(PIP): $(PY_ENV)
 
+$(PY_BIN)/drawbot: $(PY_ENV)
+	@ $(PIP) install -e .
 
-start: $(V_BIN)/python vars/config.json
-	$(VENV)/bin/python3 drawbot
-
+$(PY_ENV):
+	$(call CHECK_CMD, python3)
+	@ python3 -m venv venv
+	@ chmod +x $(V_BIN)/activate
+	$(info Use source $(PY_BIN)/activate to enable venv overriding!)
 
 clean:
-	rm -rf venv
-	rm -rf *.egg-info
-	rm -rf */__pycache__
-
+	$(RM) -r *.egg-info
+	find $(SRC_DIR) -type f -name "*.pyc" -exec rm -rf {} +
 
 fclean: clean
-	rm -rf venv
-	rm vars/*.json
+	$(RM) -f $(PY_ENV)
+	$(RM) $(CONF)
 
+.PHONY: clean fclean
 
-.PHONY: all clean fclean start
+re: fclean all
+
+.PHONY: re
