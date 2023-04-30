@@ -2,7 +2,7 @@ root = true
 
 [*]
 charset = utf-8
-end_of_line = crlf
+end_of_line = lf
 indent_size = 4
 indent_style = space
 insert_final_newline = false
@@ -13,7 +13,7 @@ ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_formatter_tags_enabled = false
 ij_smart_tabs = false
-ij_visual_guides = 72
+ij_visual_guides = 80
 ij_wrap_on_typing = false
 
 [{*.har,*.jsb2,*.jsb3,*.json,*.json.example,*.json.template,.babelrc,.eslintrc,.stylelintrc,bowerrc,jest.config}]
