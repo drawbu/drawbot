@@ -15,7 +15,7 @@ def json_wr(
     Parameters
     ----------
     filename : str
-        Name of the file. It opens the file like "drawbot/" + filename + ".json".
+        Name of the file.
     mode : "r", "w", default="r"
         Action to perform in the file.
         "r" to load data, "w" to write in the file.
