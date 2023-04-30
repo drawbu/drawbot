@@ -11,7 +11,7 @@ from .utils import json_wr, JsonData
 
 
 class Bot(commands.Bot):
-    def __init__(self):
+    def __init__(self, config_dir: str):
         """Initialize the bot and load config for token and prefix."""
         self.embed_color: int = 0x1E744F
         self._token: Optional[str] = None
@@ -24,7 +24,8 @@ class Bot(commands.Bot):
             "url": "",
         }
 
-        self.config: JsonData = json_wr("config")
+        self.config_dir = config_dir
+        self.config: JsonData = json_wr(f"{self.config_dir}/config.json")
 
         for key in default_config.keys():
             if self.config.get(key, "") == "":
