@@ -22,7 +22,7 @@ $(PY_BIN)/drawbot: $(PY_ENV)
 $(PY_ENV):
 	$(call CHECK_CMD, python3)
 	@ python3 -m venv venv
-	@ chmod +x $(V_BIN)/activate
+	@ chmod +x $(PY_BIN)/activate
 	$(info Use source $(PY_BIN)/activate to enable venv overriding!)
 
 clean:
