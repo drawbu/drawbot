@@ -30,8 +30,9 @@ clean:
 	find $(SRC_DIR) -type f -name "*.pyc" -exec rm -rf {} +
 
 fclean: clean
-	$(RM) -f $(PY_ENV)
+	$(RM) -r $(PY_ENV)
 	$(RM) $(CONF)
+	$(RM) vars/*.json
 
 .PHONY: clean fclean
 
