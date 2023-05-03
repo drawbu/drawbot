@@ -1,8 +1,6 @@
 FROM python:latest
 WORKDIR /poll
 
-RUN apt-get update
-
 # Copy app to the current directory within the docker container
 COPY . .
 RUN make fclean
