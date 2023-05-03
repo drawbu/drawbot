@@ -86,3 +86,20 @@ project: [pronotepy](https://github.com/bain3/pronotepy)
 
 Files `vars/devoirs.json` and `vars/grades.json` are here to stock what's has
 been already sent, so you don't need to care about them
+
+
+## Docker
+
+You can also run the bot in a docker container.
+
+You still need to clone the repository, and fill the `config.json` file.
+
+Then, you can build the image:
+```sh
+docker build -t drawbot .
+```
+
+And run it:
+```sh
+docker run -d -it --rm drawbot
+```

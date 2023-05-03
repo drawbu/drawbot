@@ -34,9 +34,9 @@ class PronoteCommandsGroup(app_commands.Group, name="pronote"):
 
     @app_commands.command()
     async def here(self, interaction: Interaction):
-        pronote_config: JsonDict = json_wr("pronote")
+        pronote_config: JsonDict = json_wr(f"{self.config_dir}/pronote.json")
         pronote_config["channelID"] = interaction.channel_id
-        json_wr("pronote", data=pronote_config)
+        json_wr(f"{self.config_dir}/pronote.json", data=pronote_config)
 
         await interaction.response.send_message(
             embed=discord.Embed(
@@ -51,7 +51,7 @@ class PronoteCommandsGroup(app_commands.Group, name="pronote"):
 
     @app_commands.command(description="Donne la liste des prochains devoirs")
     async def incoming(self, interaction: Interaction):
-        homeworks: JsonDict = json_wr("devoirs")
+        homeworks: JsonDict = json_wr(f"{self.config_dir}/devoirs.json")
 
         embed = discord.Embed(
             title="Prochains devoirs",

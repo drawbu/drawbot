@@ -63,7 +63,7 @@ class LoopHandler(commands.Cog):
         )
 
         new_homework_count = 0
-        for homeworks in chunks(list(fetch_homeworks(pronote)), 10):
+        for homeworks in chunks(list(fetch_homeworks(self.client.config_dir, pronote)), 10):
             new_homework_count += len(homeworks)
             await pronote_channel.send(
                 content=ping,
@@ -81,7 +81,7 @@ class LoopHandler(commands.Cog):
             )
 
         new_grades_count = 0
-        for grades in chunks(list(fetch_grades(pronote)), 10):
+        for grades in chunks(list(fetch_grades(self.client.config_dir, pronote)), 10):
             new_grades_count += len(grades)
             await pronote_channel.send(
                 content=ping,

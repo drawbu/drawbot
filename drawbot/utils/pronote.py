@@ -6,7 +6,7 @@ import pronotepy
 from .json_files import JsonData, json_wr
 
 
-def fetch_homeworks(pronote_client: pronotepy.Client) -> Optional[Generator]:
+def fetch_homeworks(directory: str, pronote_client: pronotepy.Client) -> Optional[Generator]:
     fetched_homeworks = pronote_client.homework(pronote_client.start_day)
 
     homeworks: DefaultDict[str, list] = defaultdict(list)
@@ -18,10 +18,10 @@ def fetch_homeworks(pronote_client: pronotepy.Client) -> Optional[Generator]:
             }
         )
 
-    yield from fetch_from_json("devoirs", homeworks)
+    yield from fetch_from_json(f"{directory}/devoirs.json", homeworks)
 
 
-def fetch_grades(pronote_client: pronotepy.Client) -> Optional[Generator]:
+def fetch_grades(directory: str, pronote_client: pronotepy.Client) -> Optional[Generator]:
     fetched_grades = pronote_client.current_period.grades
 
     grades: DefaultDict[str, list] = defaultdict(list)
@@ -38,7 +38,7 @@ def fetch_grades(pronote_client: pronotepy.Client) -> Optional[Generator]:
             }
         )
 
-    yield from fetch_from_json("grades", grades)
+    yield from fetch_from_json(f"{directory}/grades.json", grades)
 
 
 def fetch_from_json(filename: str, json_data: JsonData) -> Generator:
