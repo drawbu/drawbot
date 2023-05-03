@@ -10,4 +10,4 @@ COPY . .
 RUN prod/bin/pip install --upgrade pip
 RUN prod/bin/pip install -e .
 
-CMD prod/bin/drawbot
+CMD prod/bin/python3 drawbot
